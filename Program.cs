@@ -10,7 +10,7 @@ namespace FlowerSellerTgBot
         {
             string tocken;
             // string tocken = Environment.GetEnvironmentVariable("TELEGRAM_TOCKEN_BOT");
-            using (StreamReader streamReader = new StreamReader(".env", Encoding.UTF8))
+            using (StreamReader streamReader = new StreamReader("tocken.txt", Encoding.UTF8))
             {
               tocken = streamReader.ReadToEnd();
             }

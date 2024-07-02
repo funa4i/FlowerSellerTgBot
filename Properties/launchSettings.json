@@ -5,7 +5,6 @@
       "launchBrowser": true,
       "launchUrl": "weatherforecast",
       "environmentVariables": {
-        "TELEGRAM_TOCKEN_BOT": "TELGRAM_TOCKEN_BOT",
         "ASPNETCORE_ENVIRONMENT": "Development"
       },
       "dotnetRunMessages": true,
@@ -24,7 +23,6 @@
       "launchBrowser": true,
       "launchUrl": "{Scheme}://{ServiceHost}:{ServicePort}/weatherforecast",
       "environmentVariables": {
-        "TELEGRAM_TOCKEN_BOT": "TELGRAM_TOCKEN_BOT",
         "ASPNETCORE_URLS": "https://+:443;http://+:80"
       },
       "publishAllPorts": true,
