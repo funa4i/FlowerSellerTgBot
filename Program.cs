@@ -1,10 +1,20 @@
+using System.Text;
+using Telegram.Bot.Types;
+
+
 namespace FlowerSellerTgBot
 {
     public class Program
     {
         public static void Main(string[] args)
         {
-            Console.WriteLine(Environment.GetEnvironmentVariable("TELEGRAM_TOCKEN_BOT"));
+            string tocken;
+            // string tocken = Environment.GetEnvironmentVariable("TELEGRAM_TOCKEN_BOT");
+            using (StreamReader streamReader = new StreamReader(".env", Encoding.UTF8))
+            {
+              tocken = streamReader.ReadToEnd();
+            }
+            Console.WriteLine(tocken);
             Console.ReadLine();
         }
     }
