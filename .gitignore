@@ -363,3 +363,5 @@ MigrationBackup/
 FodyWeavers.xsd
 /Dockerfile
 /.env
+/tocken,txt
+/tocken.txt
