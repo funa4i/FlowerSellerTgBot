@@ -21,8 +21,11 @@ namespace FlowerSellerTgBot.Controllers
         public async void Post([FromBody] Update update)
         {
             long chatId = update.Message.Chat.Id;
-            await _bot.SendTextMessageAsync(chatId, "Echo: " + update.Message.Text);
-            _logger.LogInformation(update.Message.Chat.FirstName + " " + update.Message.Chat.LastName + " " + update.Message.Text);
+            if (update.Type == Telegram.Bot.Types.Enums.UpdateType.Message  && update.Message.Type == Telegram.Bot.Types.Enums.MessageType.Text)
+            {
+                await _bot.SendTextMessageAsync(chatId, "Echo: " + update.Message.Text);
+                _logger.LogInformation(update.Message.Chat.FirstName + " " + update.Message.Chat.LastName + " " + update.Message.Text);
+            }
         }
 
         [HttpGet]
