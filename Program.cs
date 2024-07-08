@@ -1,14 +1,24 @@
-using System.Text;
-using Telegram.Bot.Types;
-
-
 namespace FlowerSellerTgBot
 {
     public class Program
     {
         public static void Main(string[] args)
         {
-            Console.ReadLine();
+            var builder = WebApplication.CreateBuilder(args);
+            
+            builder.Services.AddControllers();
+            builder.Services.ConfigureTelegramBotMvc();
+            builder.Services.ConfigureTelegramBot<Microsoft.AspNetCore.Http.Json.JsonOptions>(opt => opt.SerializerOptions);
+            
+            var app = builder.Build();
+
+            app.UseHttpsRedirection();
+
+            app.UseAuthorization();
+
+            app.MapControllers();
+            
+            app.Run();
         }
     }
 }
