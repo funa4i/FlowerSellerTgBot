@@ -9,7 +9,7 @@ namespace FlowerSellerTgBot.Controllers
     public class BotController : ControllerBase
     {
         private readonly ILogger<BotController> _logger;
-        private readonly Telegram.Bot.ITelegramBotClient _bot;
+        private readonly ITelegramBotClient _bot;
         public BotController(ILogger<BotController> logger, ITelegramBotClient bot) 
         {
             _logger = logger;
