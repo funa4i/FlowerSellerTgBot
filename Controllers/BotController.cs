@@ -20,6 +20,7 @@ namespace FlowerSellerTgBot.Controllers
         [HttpPost]
         public async void Post([FromBody] Update update)
         {
+
             long chatId = update.Message.Chat.Id;
             if (update.Type == Telegram.Bot.Types.Enums.UpdateType.Message  && update.Message.Type == Telegram.Bot.Types.Enums.MessageType.Text)
             {
