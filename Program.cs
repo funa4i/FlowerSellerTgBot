@@ -1,4 +1,6 @@
 using Telegram.Bot;
+using FlowerSellerTgBot.DataBase;
+using FlowerSellerTgBot.Model;
 
 namespace FlowerSellerTgBot
 {
@@ -8,12 +10,15 @@ namespace FlowerSellerTgBot
         {
           
             var builder = WebApplication.CreateBuilder(args);
-
+            
             
             var token = builder.Configuration["Telegram:Token"] ?? throw new InvalidOperationException("Token is null");
             
             
             builder.Services.AddHttpClient<ITelegramBotClient, TelegramBotClient>((client, _) => new TelegramBotClient(token, client));
+
+            builder.Services.AddSingleton<IDataBase, DataBaseOwn>();
+            builder.Services.AddSingleton<IModulBot, FlowerBotModul>();
             
             builder.Services.AddControllers();
             builder.Services.ConfigureTelegramBotMvc();
