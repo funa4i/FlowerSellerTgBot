@@ -71,14 +71,15 @@ namespace FlowerSellerTgBot.Model
                     
                     if ((message.Text?.Equals("Да") ?? false) && Array.IndexOf(media, null) != 0)
                     {
-                        KeyboardButton[] buttons = new KeyboardButton[]
+                        var rpk = new ReplyKeyboardMarkup(new KeyboardButton[]
                         {
                             new KeyboardButton("1"),
                             new KeyboardButton("2"),
                             new KeyboardButton("3"),
                             new KeyboardButton("4"),
                             new KeyboardButton("5")
-                        };
+                        });
+                        rpk.ResizeKeyboard = true;
 
                         await bot.SendTextMessageAsync(Id, "Отлично, проверьте, все ли верно?");
                         await bot.SendTextMessageAsync(Id, "<<Товар>>");
@@ -88,7 +89,7 @@ namespace FlowerSellerTgBot.Model
                             "3. Изменить описние\n" +
                             "4. Изменить фото/видео\n" +
                             "5. Сохранить товар"
-                            , replyMarkup: new ReplyKeyboardMarkup(buttons));
+                            , replyMarkup: rpk);
                         machineStates = MachineStates.RefactorState;
                         break;
                     }
@@ -104,7 +105,9 @@ namespace FlowerSellerTgBot.Model
                     if (Array.IndexOf(media, null) != -1)
                     {
                         media[Array.IndexOf(media, null)] = message.Photo?.Last() != null ? message.Photo?.Last() : message.Video;
-                        await bot.SendTextMessageAsync(Id, Array.IndexOf(media, null) + " из 3, это все?", replyMarkup: new ReplyKeyboardMarkup(new KeyboardButton[]{ new KeyboardButton("Да"), new KeyboardButton("Нет") }));
+                        var rpk = new ReplyKeyboardMarkup(new KeyboardButton[] { "Да", "Нет" });
+                        rpk.ResizeKeyboard = true;
+                        await bot.SendTextMessageAsync(Id, Array.IndexOf(media, null) + " из 3, это все?", replyMarkup: rpk);
                     }
                     break;
                  case MachineStates.RefactorState:
