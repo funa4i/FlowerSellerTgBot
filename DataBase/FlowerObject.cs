@@ -1,6 +1,6 @@
-namespace FlowerSellerTgBot.ObjectClasses;
+namespace FlowerSellerTgBot.DataBase;
 /**
- * Класс, описывающий объект-цветок и его методы (IN PROGRESS)
+ * Класс, описывающий объект-цветок и его методы
  */
 public class FlowerObject
 {
@@ -11,11 +11,11 @@ public class FlowerObject
     /**
      * ID фотографии(й) товара (цветка)
      */
-    public int[] PhotosId;
+    public int[]? PhotosId;
     /**
      * ID видео товара (цветка)
      */
-    public int VideosId;
+    public int? VideosId;
     /**
      * Название товара товара (цветка)
      */
@@ -36,13 +36,13 @@ public class FlowerObject
     /// Конструктор объекта-цветка
     /// </summary>
     /// <param name="categoryId">ID категории</param>
-    /// <param name="photosId">ID фото</param>
-    /// <param name="videosId">ID видео</param>
     /// <param name="productName">Название</param>
     /// <param name="description">Описание</param>
     /// <param name="countOf">Количество</param>
     /// <param name="price">Цена</param>
-    protected FlowerObject(int categoryId, string productName, string description, int countOf, int price, int[] photosId = null,  int videosId = -1)
+    /// <param name="photosId">ID фото (необязательно)</param>
+    /// <param name="videosId">ID видео (необязательно)</param>
+    public FlowerObject(int categoryId, string productName, string description, int countOf, int price, int[]? photosId = null,  int? videosId = null)
     {
          CategoryId = categoryId;
          PhotosId = photosId;
@@ -52,4 +52,5 @@ public class FlowerObject
          CountOf = countOf;
          Price = price;
     }
+    
 }
