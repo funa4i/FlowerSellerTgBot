@@ -1,4 +1,5 @@
 ﻿using FlowerSellerTgBot.DataBase;
+using FlowerSellerTgBot.MachineStates;
 using System.Collections;
 using Telegram.Bot;
 using Telegram.Bot.Types;
@@ -11,7 +12,7 @@ namespace FlowerSellerTgBot.Model
 
         private readonly IDataBase _dataBase;
 
-        private Dictionary<long, MahineStatePerson> _personInMachine = new ();
+        private Dictionary<long, MachineStateProduct> _personInMachine = new ();
         
         public FlowerBotModul(IDataBase dataBase) 
         {
@@ -25,7 +26,7 @@ namespace FlowerSellerTgBot.Model
         {
             if (!_personInMachine.ContainsKey(message.Chat.Id))
             {
-                _personInMachine.Add(message.Chat.Id, new MahineStatePerson(message.Chat.Id));
+                _personInMachine.Add(message.Chat.Id, new MachineStateProduct(message.Chat.Id));
                 _personInMachine[message.Chat.Id].MachineStateDo(bot, message);
             }
         }
