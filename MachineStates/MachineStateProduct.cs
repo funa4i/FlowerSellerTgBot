@@ -16,7 +16,6 @@ namespace FlowerSellerTgBot.MachineStates
 
         public FileBase?[] media;
 
-
         private MachineStatesEnumProduct machineStates;
 
         public MachineStateProduct(long ChatId) : base(ChatId)
@@ -94,13 +93,11 @@ namespace FlowerSellerTgBot.MachineStates
                         break;
                     }
 
-
                     if (message.Photo == null && message.Video == null)
                     {
                         await bot.SendTextMessageAsync(Id, "Пожалуйста, пришлите фото или видео", replyMarkup: new ReplyKeyboardRemove());
                         break;
                     }
-
 
                     if (Array.IndexOf(media, null) != -1)
                     {

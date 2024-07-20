@@ -18,9 +18,7 @@ namespace FlowerSellerTgBot.Model
         {
             _dataBase = dataBase;
             _dataBase.connectBase();
-            
         }
-
         
         public async void StartMachineState(ITelegramBotClient bot, Message message)
         {
@@ -28,6 +26,7 @@ namespace FlowerSellerTgBot.Model
             {
                 _personInMachine.Add(message.Chat.Id, new MachineStateProduct(message.Chat.Id));
                 _personInMachine[message.Chat.Id].MachineStateDo(bot, message);
+                
             }
         }
 
