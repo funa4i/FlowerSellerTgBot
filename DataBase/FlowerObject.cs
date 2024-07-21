@@ -24,12 +24,11 @@ public class ProductObject
 
     public int CategoryId { get; set; }
 
+    public int SellerId { get; set; }
+
     public string? ProductName { get; set; }
 
     public string? Description { get; set; }
 
-    public int CountOf { get; set; }
-
     public int Price { get; set; }
-
 }
