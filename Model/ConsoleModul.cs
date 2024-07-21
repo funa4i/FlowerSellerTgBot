@@ -25,7 +25,6 @@ namespace FlowerSellerTgBot.Model
             {
                 ProductName = "Ландыши",
                 Description = "Отличные ландыши...",
-                CountOf = 15,
                 Price = 100
             };
 

@@ -16,6 +16,16 @@ public class CategoryObject
     public string? NameOf { get; set; }
 }
 
+public class PhotoObject
+{
+    [Key]
+    public int PhotoId { get; set; }
+
+    public string? NameOf { get; set; }
+}
+
+
+
 public class ProductObject
 {
 
