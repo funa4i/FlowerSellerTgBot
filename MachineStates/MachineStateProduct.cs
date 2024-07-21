@@ -15,26 +15,30 @@ namespace FlowerSellerTgBot.MachineStates
         public string? Description { get; private set; }
 
         public FileBase?[] media;
-
+        
         private MachineStatesEnumProduct machineStates;
 
         public MachineStateProduct(long ChatId) : base(ChatId)
         {
-            
+
             machineStates = MachineStatesEnumProduct.None;
             media = new FileBase?[3];
-
         }
 
+        
         override public async void MachineStateDo(ITelegramBotClient bot, Message message) 
         {
             switch (machineStates)
             {
                 case MachineStatesEnumProduct.None:
+
                     await bot.SendTextMessageAsync(Id, "Введите название товара", replyMarkup: new ReplyKeyboardRemove());
                     machineStates = MachineStatesEnumProduct.Name;
                     break;
+
+                  
                 case MachineStatesEnumProduct.Name:
+                    
                     if (string.IsNullOrEmpty(message.Text))
                     {
                         await bot.SendTextMessageAsync(Id, "Извините, я вас не понял. Пожалуйста, введите название товара", replyMarkup: new ReplyKeyboardRemove());
@@ -45,6 +49,7 @@ namespace FlowerSellerTgBot.MachineStates
                     await bot.SendTextMessageAsync(Id, "Какая цена будет у товара?", replyMarkup: new ReplyKeyboardRemove());
                     break;
                 case MachineStatesEnumProduct.Price:
+                    
                     if (string.IsNullOrEmpty(message.Text))
                     {
                         await bot.SendTextMessageAsync(Id, "Извините, я вас не понял. Пожалуйста, введите цену товара", replyMarkup: new ReplyKeyboardRemove());
@@ -54,6 +59,7 @@ namespace FlowerSellerTgBot.MachineStates
                     machineStates = MachineStatesEnumProduct.Desription;
 
                     await bot.SendTextMessageAsync(Id, "Опишите товар", replyMarkup: new ReplyKeyboardRemove());
+                    
                     break;
                 case MachineStatesEnumProduct.Desription:
                     if (string.IsNullOrEmpty(message.Text))
