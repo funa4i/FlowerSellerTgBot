@@ -17,8 +17,8 @@ namespace FlowerSellerTgBot.Model
         public FlowerBotModul(IDataBase dataBase) 
         {
             _dataBase = dataBase;
-            _dataBase.connectBase();
             
+    
         }
 
         
@@ -28,6 +28,7 @@ namespace FlowerSellerTgBot.Model
             {
                 _personInMachine.Add(message.Chat.Id, new MachineStateProduct(message.Chat.Id));
                 _personInMachine[message.Chat.Id].MachineStateDo(bot, message);
+                
             }
         }
 
