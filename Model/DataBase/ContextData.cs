@@ -1,8 +1,7 @@
-﻿using FlowerSellerTgBot.DataBase;
+﻿using FlowerSellerTgBot.Model.DataBase.DbObjects;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 
-namespace FlowerSellerTgBot.Model.Data
+namespace FlowerSellerTgBot.Model.DataBase
 {
     public class DataContext : DbContext
     {
@@ -10,12 +9,14 @@ namespace FlowerSellerTgBot.Model.Data
         public DataContext(DbContextOptions<DataContext> options) : base(options) { }
         public DbSet<ProductObject> productObjects { get; set; } = null!;
         public DbSet<CategoryObject> categoryObjects { get; set; } = null!;
+        public DbSet<PhotoObject> photoObjects { get; set; } = null!;
+        public DbSet<VideoObject> videoObjects { get; set; } = null!;
+        public DbSet<SellerObject> sellerObjects { get; set; } = null!;
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             if (!optionsBuilder.IsConfigured)
                 optionsBuilder.UseNpgsql("Server=95.163.221.233;Database=simbir_practice_db;Port=5432;User Id=simbir_practice_user;Password=simbirpass;");
-            
-        }
 
+        }
     }
 }

@@ -1,6 +1,6 @@
 ﻿using FlowerSellerTgBot.Controllers;
-using FlowerSellerTgBot.DataBase;
-using FlowerSellerTgBot.Model.Data;
+using FlowerSellerTgBot.Model.DataBase;
+using FlowerSellerTgBot.Model.DataBase.DbObjects;
 
 namespace FlowerSellerTgBot.Model
 {
@@ -19,18 +19,17 @@ namespace FlowerSellerTgBot.Model
         {
           //  var categoryString = _dataBase.GetCategories();
 
-            Console.WriteLine("Отправка объекта");
+           // Console.WriteLine("Отправка объекта");
 
-            ProductObject productObject = new ProductObject()
-            {
-                ProductName = "Ландыши",
-                Description = "Отличные ландыши...",
-                Price = 100
-            };
+           // string[] FileID = { "5hr55rh5", "5a4y4h4" };
 
-            _dataBase.SetProductObjectWithCategory(productObject, "Семена");
+           // _dataBase.SentToDatabasePhoto(FileID, "Роза");
 
-     //       Console.WriteLine("Категория создана!");
+         //   _dataBase.SentToDatabasePhoto(FileIDSEC, "Крапива");
+
+            //_dataBase.SetProductObjectWithCategory(productObject, "Семена");
+
+            //       Console.WriteLine("Категория создана!");
 
             /*if (categoryString.Count == 0)
             {

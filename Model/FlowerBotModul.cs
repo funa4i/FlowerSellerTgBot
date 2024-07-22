@@ -1,5 +1,5 @@
-﻿using FlowerSellerTgBot.DataBase;
-using FlowerSellerTgBot.MachineStates;
+﻿using FlowerSellerTgBot.MachineStates;
+using FlowerSellerTgBot.Model.DataBase;
 using System.Collections;
 using Telegram.Bot;
 using Telegram.Bot.Types;

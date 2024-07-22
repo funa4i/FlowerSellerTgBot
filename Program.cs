@@ -1,8 +1,7 @@
 using Telegram.Bot;
-using FlowerSellerTgBot.DataBase;
 using FlowerSellerTgBot.Model;
 using Microsoft.EntityFrameworkCore;
-using FlowerSellerTgBot.Model.Data;
+using FlowerSellerTgBot.Model.DataBase;
 
 namespace FlowerSellerTgBot
 {
@@ -28,6 +27,8 @@ namespace FlowerSellerTgBot
             {
                 options.UseNpgsql(builder.Configuration.GetConnectionString("ServerConn"));
             });
+
+            
 
             //
             ConsoleModul consoleModul = new ConsoleModul(new DatabaseSDK());
