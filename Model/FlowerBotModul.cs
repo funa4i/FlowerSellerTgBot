@@ -20,14 +20,38 @@ namespace FlowerSellerTgBot.Model
             _dataBase.connectBase();
         }
         
-        public async void StartMachineState(ITelegramBotClient bot, Message message)
+
+
+        // Создание машинного сосотояния, 
+        public void StartMachineStateProduct(ITelegramBotClient bot, Message message)
         {
             if (!_personInMachine.ContainsKey(message.Chat.Id))
             {
+                
                 _personInMachine.Add(message.Chat.Id, new MachineStateProduct(message.Chat.Id));
+                
                 _personInMachine[message.Chat.Id].MachineStateDo(bot, message);
                 
+                _personInMachine[message.Chat.Id].addLifeTimeListener(deleteMashineState);
+                _personInMachine[message.Chat.Id].addActionStateDoneListener(SaveMachineStateProduct);
             }
+        }
+
+        private void deleteMashineState(MachineState state)
+        {
+            lock (_personInMachine)
+            {
+                if (_personInMachine.ContainsKey(state._chatId))
+                {
+                    _personInMachine.Remove(state._chatId);
+                }
+            }
+        }
+
+        private void SaveMachineStateProduct(MachineState state)
+        {
+            // TODO: Вызвать сохранение в бд
+            MachineState.invokeDieEvent(state);
         }
 
 
@@ -40,8 +64,12 @@ namespace FlowerSellerTgBot.Model
             }
             else if (message.Type == MessageType.Text && message.Text == "/доб")
             {
-                this.StartMachineState(bot, message);
+                this.StartMachineStateProduct(bot, message);
                 return;
+            }
+            else if (message.Type == MessageType.Text)
+            {
+                await bot.SendTextMessageAsync(message.Chat.Id, "Эхо: " + message.Text);
             }
         }
     }

@@ -18,6 +18,7 @@ namespace FlowerSellerTgBot.Controllers
             _logger = logger;
             _bot = bot;
             _modulBot = modul;
+            _bot.SetWebhookAsync("URL");
 
         }
         

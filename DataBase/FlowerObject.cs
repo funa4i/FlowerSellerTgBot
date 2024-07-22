@@ -18,7 +18,7 @@ public class FlowerObject
     /**
      * Массив медиафайлов (ключ-значение) с ID файла и Типом файла.
      */
-    public KeyValuePair<string, Telegram.Bot.Types.Enums.FileType>[]? MediaFiles;
+    public KeyValuePair<string, InputMediaType>[]? MediaFiles;
     /**
      * Название товара товара (цветка)
      */
@@ -45,7 +45,7 @@ public class FlowerObject
     /// <param name="countOf">Количество</param>
     /// <param name="price">Цена</param>
     /// <param name="mediaFiles">Массив Медиафайлов (ID - Type). По умолчанию - null</param>>
-    public FlowerObject(int? productId, int categoryId, string productName, string description, int countOf, int price, KeyValuePair<string, Telegram.Bot.Types.Enums.FileType>[]? mediaFiles = null)
+    public FlowerObject(int? productId, int categoryId, string productName, string description, int countOf, int price, KeyValuePair<string, InputMediaType>[]? mediaFiles = null)
     {
          ProductId = productId;
          CategoryId = categoryId;
@@ -56,12 +56,11 @@ public class FlowerObject
          //Если передают медиафайлы - записываем только первые три
          if (mediaFiles != null)
          {
-              MediaFiles = new KeyValuePair<string, FileType>[3];
+              MediaFiles = new KeyValuePair<string, InputMediaType>[3];
               for (int i = 0; i < 3; i++)
               {
                MediaFiles[i] = mediaFiles[i];
               }
          }
     }
-   
 }

@@ -6,7 +6,7 @@ namespace FlowerSellerTgBot.Model
 {
     public interface IModulBot
     {
-        public void StartMachineState(ITelegramBotClient bot, Message message);
+        public void StartMachineStateProduct(ITelegramBotClient bot, Message message);
 
         public void DoCommand(ITelegramBotClient bot, Message message);
     }
