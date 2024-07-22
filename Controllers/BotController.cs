@@ -18,7 +18,7 @@ namespace FlowerSellerTgBot.Controllers
             _logger = logger;
             _bot = bot;
             _modulBot = modul;
-            _bot.SetWebhookAsync("URL");
+            _bot.SetWebhookAsync("https://4732-176-116-140-30.ngrok-free.app");
 
         }
         
@@ -32,7 +32,7 @@ namespace FlowerSellerTgBot.Controllers
             {
             //    await _bot.SendTextMessageAsync(chatId, "Echo: " + update.Message.Text);
             //    _logger.LogInformation(update.Message.Chat.FirstName + " " + update.Message.Chat.LastName + " " + update.Message.Text);
-                _modulBot.DoCommand(_bot, update.Message);
+                await _modulBot.handleMessage(_bot, update.Message);
             }
         }
 

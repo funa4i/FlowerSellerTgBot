@@ -12,30 +12,69 @@ namespace FlowerSellerTgBot.Model
 
         private readonly IDataBase _dataBase;
 
-        private Dictionary<long, MachineStateProduct> _personInMachine = new ();
-        
-        public FlowerBotModul(IDataBase dataBase) 
+        private Dictionary<long, MachineState> _personInMachine = new();
+
+        public FlowerBotModul(IDataBase dataBase)
         {
             _dataBase = dataBase;
             _dataBase.connectBase();
         }
-        
 
 
-        // Создание машинного сосотояния, 
-        public void StartMachineStateProduct(ITelegramBotClient bot, Message message)
+
+        // Создание машинного сосотояния, для нового продукта
+        public async void startMachineStateProduct(ITelegramBotClient bot, Message message)
         {
             if (!_personInMachine.ContainsKey(message.Chat.Id))
             {
-                
                 _personInMachine.Add(message.Chat.Id, new MachineStateProduct(message.Chat.Id));
-                
-                _personInMachine[message.Chat.Id].MachineStateDo(bot, message);
-                
+
+                await _personInMachine[message.Chat.Id].MachineStateDo(bot, message);
+
                 _personInMachine[message.Chat.Id].addLifeTimeListener(deleteMashineState);
-                _personInMachine[message.Chat.Id].addActionStateDoneListener(SaveMachineStateProduct);
+                _personInMachine[message.Chat.Id].addActionStateDoneListener(saveMachineStateProduct);
             }
         }
+
+        // Создание машинного состояния, для новой категории
+        public async void startMachineStateCategory(ITelegramBotClient bot, Message message)
+        {
+            if (!_personInMachine.ContainsKey(message.Chat.Id))
+            {
+                _personInMachine.Add(message.Chat.Id, new MachineStateCategory(message.Chat.Id));
+
+                await _personInMachine[message.Chat.Id].MachineStateDo(bot, message);
+
+                _personInMachine[(message.Chat.Id)].addLifeTimeListener(deleteMashineState);
+                _personInMachine[message.Chat.Id].addActionStateDoneListener(saveMachineStateCategory);
+            }
+        }
+
+
+        public async Task handleMessage(ITelegramBotClient bot, Message message)
+        {
+            if (_personInMachine.ContainsKey(message.Chat.Id))
+            {
+                await _personInMachine[(message.Chat.Id)].MachineStateDo(bot, message);
+                return;
+            }
+            else if (message.Type == MessageType.Text) ;
+            {
+                if (message.Text.Equals("/доб продукт"))
+                {
+                    this.startMachineStateProduct(bot, message);
+                }
+                else if(message.Text == "/доб категорию") {
+                    this.startMachineStateCategory(bot, message);
+                }
+                else
+                {
+                    await bot.SendTextMessageAsync(message.Chat.Id, "Эхо: " + message.Text);
+                }
+            }
+        }
+
+
 
         private void deleteMashineState(MachineState state)
         {
@@ -48,29 +87,17 @@ namespace FlowerSellerTgBot.Model
             }
         }
 
-        private void SaveMachineStateProduct(MachineState state)
+        private void saveMachineStateProduct(MachineState state)
         {
             // TODO: Вызвать сохранение в бд
-            MachineState.invokeDieEvent(state);
         }
 
-
-        public async void DoCommand(ITelegramBotClient bot, Message message)
+        private void saveMachineStateCategory(MachineState state)
         {
-            if (_personInMachine.ContainsKey(message.Chat.Id))
-            {
-                _personInMachine[(message.Chat.Id)].MachineStateDo(bot, message);
-                return;
-            }
-            else if (message.Type == MessageType.Text && message.Text == "/доб")
-            {
-                this.StartMachineStateProduct(bot, message);
-                return;
-            }
-            else if (message.Type == MessageType.Text)
-            {
-                await bot.SendTextMessageAsync(message.Chat.Id, "Эхо: " + message.Text);
-            }
+            // TODO: Вазвать сохранение категории
         }
+
+
+        
     }
 }

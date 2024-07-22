@@ -44,7 +44,7 @@ namespace FlowerSellerTgBot.MachineStates
             _stateDone += listener;
         }
 
-        public abstract void MachineStateDo(ITelegramBotClient bot, Message message);
+        public abstract Task MachineStateDo(ITelegramBotClient bot, Message message);
 
     }
 }
