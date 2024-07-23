@@ -20,10 +20,28 @@ public class FlowerObject
     * ID чата
     */
     public string? ChatId;
+    
+    private KeyValuePair<string, InputMediaType>[]? _mediaFiles;
     /**
      * Массив медиафайлов (ключ-значение) с ID файла и Типом файла.
      */
-    public KeyValuePair<string, InputMediaType>[]? MediaFiles;
+    public KeyValuePair<string, InputMediaType>[]? MediaFiles
+    {
+        get { return _mediaFiles; }
+        set
+        {
+            if (value != null)
+            {
+                int mediaLength = value.Length < 3 ? value.Length : 3;
+                _mediaFiles = new KeyValuePair<string, InputMediaType>[mediaLength];
+                for (int i = 0; i < mediaLength; i++)
+                {
+                    _mediaFiles[i] = value[i];
+                }
+            }
+        }
+    }
+
     /**
      * Название товара товара (цветка)
      */
@@ -37,11 +55,11 @@ public class FlowerObject
      */
     public string? Price;
     /// <summary>
-    /// Конструктор (будет дезинтегрирован в скором времени)
+    /// Конструктор объекта-цветка
     /// </summary>
     /// <param name="categoryName">Имя категории</param>
-    /// <param name="chatId">ID чата</param>
-    /// <param name="mediaFiles">Массив медиафайлов (пары ключ-значение из ID и типа медиафайла)</param>
+    /// <param name="chatId">chatID</param>
+    /// <param name="mediaFiles">Массив мадиафайлов (ID - Тип)</param>
     /// <param name="productName">Имя цветка</param>
     /// <param name="description">Описание</param>
     /// <param name="price">Цена</param>
@@ -64,20 +82,7 @@ public class FlowerObject
         if (MediaFiles == null || MediaFiles.Length == 0)
             throw new NullReferenceException("Отсутствуют медиафайлы");
         List<IAlbumInputMedia> inputMedia = new List<IAlbumInputMedia>(3);
-        if (MediaFiles[0].Value == InputMediaType.Photo)
-        {
-            var firstInputWithDescription = new InputMediaPhoto(MediaFiles[0].Key);
-            firstInputWithDescription.Caption = $"{ProductName} - {Price}\n" + $"{Description}";
-            inputMedia.Add(firstInputWithDescription);
-        }
-        else if (MediaFiles[0].Value == InputMediaType.Video)
-        {
-            var firstInputWithDescription = new InputMediaVideo(MediaFiles[0].Key);
-            firstInputWithDescription.Caption = $"{ProductName} - {Price}\n" + $"{Description}";
-            inputMedia.Add(firstInputWithDescription);
-        }
-        
-        for (int i = 1; i < (MediaFiles.Length < 3 ? MediaFiles.Length : 3); i++)
+        for (int i = 0; i < (MediaFiles.Length < 3 ? MediaFiles.Length : 3); i++)
         {
             KeyValuePair<string, InputMediaType> keyValuePair = MediaFiles[i];
             if (keyValuePair.Value == InputMediaType.Photo)
@@ -85,8 +90,7 @@ public class FlowerObject
             else if (keyValuePair.Value == InputMediaType.Video)
                 inputMedia.Add(new InputMediaVideo(keyValuePair.Key));
         }
+        ((InputMedia)inputMedia[0]).Caption = $"{ProductName} - {Price}\n" + $"{Description}";
         await bot.SendMediaGroupAsync(id, inputMedia);
     }
-    //TODO: Убрать костыли при добавлении загаловка первому элементу Inputmedia. Протестировать работу! 
-    //TODO: Сделать пустой конструктор/добавить сеттер к параметру InputMedia.
 }
