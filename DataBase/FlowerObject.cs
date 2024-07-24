@@ -1,66 +1,95 @@
+using System.ComponentModel.DataAnnotations;
+using System.Runtime.InteropServices.JavaScript;
 using Microsoft.EntityFrameworkCore.Design;
+using Telegram.Bot;
+using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 
 namespace FlowerSellerTgBot.DataBase;
+
 /**
- * Класс, описывающий объект-цветок и его методы
- */
+* Класс, описывающий объект-цветок и его методы
+*/
 public class FlowerObject
 {
     /**
-     * ID товара (цветка)
+     * Название категории товара
      */
-    public int? ProductId;
+    public string? CategoryName;
     /**
-     * ID категории товара товара (цветка)
-     */
-    public int CategoryId;
+    * ID чата
+    */
+    public string? ChatId;
+    
+    private KeyValuePair<string, InputMediaType>[]? _mediaFiles;
     /**
      * Массив медиафайлов (ключ-значение) с ID файла и Типом файла.
      */
-    public KeyValuePair<string, InputMediaType>[]? MediaFiles;
+    public KeyValuePair<string, InputMediaType>[]? MediaFiles
+    {
+        get { return _mediaFiles; }
+        set
+        {
+            if (value != null)
+            {
+                int mediaLength = value.Length < 3 ? value.Length : 3;
+                _mediaFiles = new KeyValuePair<string, InputMediaType>[mediaLength];
+                for (int i = 0; i < mediaLength; i++)
+                {
+                    _mediaFiles[i] = value[i];
+                }
+            }
+        }
+    }
     /**
      * Название товара товара (цветка)
      */
-    public string ProductName;
+    public string? ProductName;
     /**
      * Описание товара (цветка)
      */
-    public string Description;
-    /**
-     * Количество товара (цветка) в наличии
-     */
-    public int CountOf;
+    public string? Description;
     /**
      * Цена товара (цветка)
      */
-    public int Price; //Тут можно заменить на string, в теории(?)
+    public string? Price;
     /// <summary>
     /// Конструктор объекта-цветка
     /// </summary>
-    /// <param name="productId">ID объекта</param>
-    /// <param name="categoryId">ID категории</param>
-    /// <param name="productName">Название</param>
+    /// <param name="categoryName">Имя категории</param>
+    /// <param name="chatId">chatID</param>
+    /// <param name="mediaFiles">Массив мадиафайлов (ID - Тип)</param>
+    /// <param name="productName">Имя цветка</param>
     /// <param name="description">Описание</param>
-    /// <param name="countOf">Количество</param>
     /// <param name="price">Цена</param>
-    /// <param name="mediaFiles">Массив Медиафайлов (ID - Type). По умолчанию - null</param>>
-    public FlowerObject(int? productId, int categoryId, string productName, string description, int countOf, int price, KeyValuePair<string, InputMediaType>[]? mediaFiles = null)
+    public FlowerObject(string? categoryName, string? chatId, KeyValuePair<string, InputMediaType>[]? mediaFiles, string? productName, string? description, string? price)
     {
-         ProductId = productId;
-         CategoryId = categoryId;
-         ProductName = productName;
-         Description = description;
-         CountOf = countOf;
-         Price = price;
-         //Если передают медиафайлы - записываем только первые три
-         if (mediaFiles != null)
-         {
-              MediaFiles = new KeyValuePair<string, InputMediaType>[3];
-              for (int i = 0; i < 3; i++)
-              {
-               MediaFiles[i] = mediaFiles[i];
-              }
-         }
+        CategoryName = categoryName;
+        ChatId = chatId;
+        MediaFiles = mediaFiles;
+        ProductName = productName;
+        Description = description;
+        Price = price;
+    }
+    /// <summary>
+    /// Метод отпраки объекта - медиафайлов и описания
+    /// </summary>
+    /// <param name="bot">Бот-отправитель</param>
+    /// <param name="id">ID чата</param>
+    public async Task Send(ITelegramBotClient bot, ChatId id)
+    {
+        if (MediaFiles == null || MediaFiles.Length == 0)
+            throw new NullReferenceException("Отсутствуют медиафайлы");
+        List<IAlbumInputMedia> inputMedia = new List<IAlbumInputMedia>(3);
+        for (int i = 0; i < (MediaFiles.Length < 3 ? MediaFiles.Length : 3); i++)
+        {
+            KeyValuePair<string, InputMediaType> keyValuePair = MediaFiles[i];
+            if (keyValuePair.Value == InputMediaType.Photo)
+                inputMedia.Add(new InputMediaPhoto(keyValuePair.Key));
+            else if (keyValuePair.Value == InputMediaType.Video)
+                inputMedia.Add(new InputMediaVideo(keyValuePair.Key));
+        }
+        ((InputMedia)inputMedia[0]).Caption = $"{ProductName} - {Price}\n" + $"{Description}";
+        await bot.SendMediaGroupAsync(id, inputMedia);
     }
 }
