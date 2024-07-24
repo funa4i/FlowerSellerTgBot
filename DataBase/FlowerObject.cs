@@ -41,7 +41,6 @@ public class FlowerObject
             }
         }
     }
-
     /**
      * Название товара товара (цветка)
      */

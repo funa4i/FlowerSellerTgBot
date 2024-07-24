@@ -1,6 +1,6 @@
-﻿namespace FlowerSellerTgBot.MachineStates
+﻿namespace FlowerSellerTgBot.MachineStates.Enums
 {
-    public enum MachineStatesEnumProduct
+    public enum States
     {
         None = -1,
         Name = 0,
