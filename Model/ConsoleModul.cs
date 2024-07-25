@@ -1,6 +1,7 @@
 ﻿using FlowerSellerTgBot.Controllers;
 using FlowerSellerTgBot.Model.DataBase;
 using FlowerSellerTgBot.Model.DataBase.DbObjects;
+using Telegram.Bot.Types.Enums;
 
 namespace FlowerSellerTgBot.Model
 {
@@ -17,11 +18,38 @@ namespace FlowerSellerTgBot.Model
    
         private void test_one()
         {
-          //  var categoryString = _dataBase.GetCategories();
+            //  var categoryString = _dataBase.GetCategories();
 
-           // Console.WriteLine("Отправка объекта");
+            // Console.WriteLine("Отправка объекта");
 
-           // string[] FileID = { "5hr55rh5", "5a4y4h4" };
+
+
+
+            string[] FileIDP = { "Photo-gdsgds322", "Photo-jrt43y4" };
+            string[] FileIDV = { "Video-hdh5h35j4", "Video-rhdrhr34", "Video-fsdy32y3" };
+
+            KeyValuePair<string, InputMediaType>[] MediaFiles_Custom = new KeyValuePair<string, InputMediaType>[3];
+
+            for (int i = 0; i < 3; i++) {
+                for (int b = 0; b < FileIDP.Count() - 1; b++)
+                {
+                    var temp = new KeyValuePair<string, InputMediaType>(FileIDP[b], InputMediaType.Photo);
+                    MediaFiles_Custom[i] = temp;
+                }
+            }
+
+            FlowerObject flowerObject = new FlowerObject()
+            {
+                CategoryName = "Category#1",
+                ChatId = "awf20f020lf2flsl463g",
+                ProductName = "Лаванда",
+                Description = "Отличная лаванда",
+                MediaFiles = MediaFiles_Custom,
+                Price = "100"
+            };
+
+            _dataBase.SendToDatabase(flowerObject);
+
 
            // _dataBase.SentToDatabasePhoto(FileID, "Роза");
 

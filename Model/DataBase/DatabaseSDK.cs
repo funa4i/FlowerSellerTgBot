@@ -14,6 +14,12 @@ namespace FlowerSellerTgBot.Model.DataBase
         private readonly DataContext _db;
         private readonly ILogger _logger;
 
+        public enum EnumDB
+        {
+            WITHOUTPHOTO = 1,
+            WITHOUTVIDEO
+        }
+
         public DatabaseSDK()
         {
             _db = new DataContext();
@@ -21,8 +27,14 @@ namespace FlowerSellerTgBot.Model.DataBase
             _logger = LoggerFactory.Create(builder => builder.AddConsole()).CreateLogger(string.Empty);
         }
 
-        private void SentToDatabasePhoto(KeyValuePair<string, InputMediaType>[] MediaFiles, string name_product)
+        private void SendToDatabasePhoto(KeyValuePair<string, InputMediaType>[]? MediaFiles, string? name_product)
         {
+            if (name_product == null)
+                return;
+
+            if (MediaFiles == null)
+                return;
+
             var remove_options = from r in _db.photoObjects where r.PhotoId == GetIdNameProduct(name_product) select r;
 
             while (remove_options.Count() > 0)
@@ -31,23 +43,30 @@ namespace FlowerSellerTgBot.Model.DataBase
                 _db.SaveChanges();
             }
 
-            if (MediaFiles[MediaFiles.Count()].Value == InputMediaType.Video
-                && MediaFiles[MediaFiles.Count()].Key == "")
-                return;
+            PhotoObject[] photo = new PhotoObject[2];
 
             if (remove_options.Count() == 0)
             {
-                for (int i = 0; i < MediaFiles.Count(); i++)
+       
+
+                for (int i = 0; i < 2; i++)
                 {
-                    PhotoObject photo = new PhotoObject() { FileId = MediaFiles[i].Key, PhotoId = GetIdNameProduct(name_product) };
-                    _db.photoObjects.Add(photo);
+                    
+
+                    photo[i].FileId = MediaFiles[i].Key;
+                    photo[i].PhotoId = GetIdNameProduct(name_product);
+
+                    _db.photoObjects.Add(photo[i]);
                     _db.SaveChanges();
                 }
             }
         }
 
-        private void SentToDatabaseVideo(KeyValuePair<string, InputMediaType>[] MediaFiles, string name_product)
+     /* private void SendToDatabaseVideo(KeyValuePair<string, InputMediaType>[] MediaFiles, string? name_product)
         {
+            if (name_product == null)
+                return;
+
             var remove_options = from r in _db.videoObjects where r.VideoId == GetIdNameProduct(name_product) select r;
 
             while (remove_options.Count() > 0)
@@ -69,57 +88,52 @@ namespace FlowerSellerTgBot.Model.DataBase
                     _db.SaveChanges();
                 }
             }
-        }
+        }*/
 
-        public void SendToDatabaseObject(FlowerObject flowerObject)
+        private void SendToDatabaseProduct(string? _productName, string? _description, int _categoryId, string? _price, int _sellerId)
         {
-            if (flowerObject.CategoryName == null)
-            {
-                _logger.LogWarning("Не передана CategoryName");
-                return;
-            }
-
-            if (flowerObject.ChatId == null)
-            {
-                _logger.LogWarning("Не передан ChatId");
-                return;
-            }
-
-            if (flowerObject.MediaFiles == null)
-            {
-                _logger.LogWarning("Не передан MediaFiles");
-                return;
-            }
-
-            //Если не существует категории в бд, то создаем эту категорию
-            if (!CategoryDoesExist(flowerObject.CategoryName))
-            {
-                CategoryObject categoryObject = new CategoryObject() { NameOf = flowerObject.CategoryName };
-
-                _db.categoryObjects.Add(categoryObject);
-                _db.SaveChanges();
-            }
-
-
-
             ProductObject productObject = new ProductObject()
             {
-                ProductName = flowerObject.ProductName,
-                Description = flowerObject.Description,
-                CategoryId = GetIdCategory(flowerObject.CategoryName),
-                Price = flowerObject.Price,
-                SellerId = GetIdSeller(flowerObject.ChatId)
-
+                ProductName = _productName,
+                Description = _description,
+                CategoryId = _categoryId,
+                Price = _price,
+                SellerId = _sellerId
             };
-
 
             _db.productObjects.Add(productObject);
             _db.SaveChanges();
+        }
 
-         
-            SentToDatabasePhoto(flowerObject.MediaFiles, flowerObject.ProductName);
+        public void SendToDatabase(FlowerObject flowerObject)
+        {
+            if (flowerObject.CategoryName == null) { _logger.LogWarning("SendToDatabase: CategoryName=null"); return; }
 
-            SentToDatabaseVideo(flowerObject.MediaFiles, flowerObject.ProductName);
+            if (flowerObject.ChatId == null) { _logger.LogWarning("SendToDatabase: ChatId=null"); return; }
+
+            if (flowerObject.MediaFiles == null) {
+                _logger.LogWarning("SendToDatabase: MediaFiles=null");
+                return;
+            }
+
+            CreateNewCategory(flowerObject.CategoryName);
+
+            CreateNewSeller(flowerObject.ChatId);
+
+            SendToDatabaseProduct
+            (
+                flowerObject.ProductName, 
+                flowerObject.Description, 
+                GetIdCategory(flowerObject.CategoryName), 
+                flowerObject.Price, 
+                GetIdSeller(flowerObject.ChatId)
+            );
+
+        
+                SendToDatabasePhoto(flowerObject.MediaFiles, flowerObject.ProductName);
+
+        //    if (e_args != EnumDB.WITHOUTVIDEO)
+        //        SendToDatabaseVideo(flowerObject.MediaFiles, flowerObject.ProductName);
 
             _logger.LogInformation("объект загружен в бд");
         }
@@ -139,7 +153,7 @@ namespace FlowerSellerTgBot.Model.DataBase
             _db.SaveChanges();
         }
 
-        public void SetNewCategory(string name_category)
+        private void CreateNewCategory(string name_category)
         {
             if (!CategoryDoesExist(name_category))
             {
@@ -148,8 +162,22 @@ namespace FlowerSellerTgBot.Model.DataBase
                 _db.categoryObjects.Add(category);
                 _db.SaveChanges();
             }
-            else
+            else 
                 _logger.LogInformation("Категория уже существует");
+
+        }
+
+        private void CreateNewSeller(string chatId)
+        {
+            if (!SellerDoesExist(chatId))
+            {
+                SellerObject seller = new SellerObject() { ChatId = chatId };
+
+                _db.sellerObjects.Add(seller);
+                _db.SaveChanges();
+            }
+            else
+                _logger.LogInformation("Продавец уже существует");
 
         }
 
@@ -170,37 +198,21 @@ namespace FlowerSellerTgBot.Model.DataBase
             return categories;
         }
 
-
-        private int GetIdPhoto(KeyValuePair<string, InputMediaType>[]? MediaFiles)
+        public List<string> GetSellers()
         {
-            var photoOBJ = _db.photoObjects;
+            var sellerOBJ = _db.sellerObjects;
 
-            foreach (PhotoObject photo in photoOBJ)
+            List<string> sellers = new List<string>();
+
+            foreach (SellerObject seller in sellerOBJ)
             {
-                if (MediaFiles[0].Value == InputMediaType.Photo &&
-                    photo.FileId == MediaFiles[0].Key)
+                if (seller.ChatId != null)
                 {
-                    return photo.PhotoId;
+                    sellers.Add(seller.ChatId);
                 }
             }
 
-            return 0;
-        }
-
-        private int GetIdVideo(KeyValuePair<string, InputMediaType>[]? MediaFiles)
-        {
-            var videoOBJ = _db.videoObjects;
-
-            foreach (VideoObject video in videoOBJ)
-            {
-                if (MediaFiles[0].Value == InputMediaType.Video &&
-                    video.FileId == MediaFiles[0].Key)
-                {
-                    return video.VideoId;
-                }
-            }
-
-            return 0;
+            return sellers;
         }
 
         private int GetIdSeller(string chatId)
@@ -244,14 +256,28 @@ namespace FlowerSellerTgBot.Model.DataBase
             return 0;
         }
 
-        //сомнительная фича, но пусть пока что будет
-        public bool CategoryDoesExist(string name_category)
+        private bool CategoryDoesExist(string name_category)
         {
             var categoryString = GetCategories();
 
             for (int i = 0; i < categoryString.Count; i++)
             {
                 if (categoryString[i] == name_category)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private bool SellerDoesExist(string chatId)
+        {
+            var sellerString = GetSellers();
+
+            for (int i = 0; i < sellerString.Count; i++)
+            {
+                if (sellerString[i] == chatId)
                 {
                     return true;
                 }

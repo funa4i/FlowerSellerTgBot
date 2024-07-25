@@ -9,6 +9,12 @@ namespace FlowerSellerTgBot.Model.DataBase;
 /**
  * Класс, описывающий объект-цветок и его методы
  */
+
+public class MediaFilesObject
+{
+    public static string? File { get; set; }
+    public static InputMediaType Type { get; set; }
+}
 public class FlowerObject
 {
     /**
@@ -42,11 +48,11 @@ public class FlowerObject
     /// </summary>
     /// <param name="bot">Бот-отправитель</param>
     /// <param name="id">ID чата</param>
-    public void Send(ITelegramBotClient bot, ChatId id)
+   /* public void Send(ITelegramBotClient bot, ChatId id)
     {
         if (MediaFiles == null || MediaFiles.Length == 0)
             return;
-        List<IAlbumInputMedia> inputMedia = new();
+        var inputMedia = new List<IAlbumInputMedia>();
         for (var i = 0; i < 3; i++)
         {
             KeyValuePair<string, InputMediaType> keyValuePair = MediaFiles[i];
@@ -56,11 +62,11 @@ public class FlowerObject
                 inputMedia[i] = new InputMediaVideo(keyValuePair.Key);
         }
         bot.SendMediaGroupAsync(id, inputMedia);
-    }
+    }*/
     //TODO: Убрать костыли при добавлении загаловка первому элементу Inputmedia. Протестировать работу! 
     //TODO: Придумать, как выходить из метода при отсутствии медиа. (Exception какой-то, я полагаю)
 
     //Тимофей(funa4i) - На каждый цветок минимум одна фотка, по другому быть не может. Ошибку выбрасывать самое то!
-    //Антон(study) - Ошибку на отсутсвие фото прописал в логере. Подредактировал функцию Send
+    //Антон(study) - Ошибку на отсутсвие фото прописал в DatabaseSDK. Подредактировал функцию Send
     
 }
