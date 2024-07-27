@@ -14,7 +14,9 @@ namespace FlowerSellerTgBot.Model.DataBase
         public ProductObject GetProductObjectFromCategory(string name_category);
         public int GetIdCategory(string name_category);
         public int GetIdNameProduct(string name_product);
-        public void SendToDatabase(FlowerObject flowerObject); //Передача в бд FlowerObject
+        public List<FlowerObject> GetFlowerObject(string? name_category);
+        public void SendToDatabase(FlowerObject flowerObject, EnumDB args_e = 0); //Передача в бд FlowerObject
         public void SetProductObjectWithCategory(ProductObject productObject, string name_category);
+        public void CreateNewCategory(string name_category);
     }
 }

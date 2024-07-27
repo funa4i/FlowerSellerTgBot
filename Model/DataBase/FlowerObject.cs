@@ -12,8 +12,16 @@ namespace FlowerSellerTgBot.Model.DataBase;
 
 public class MediaFilesObject
 {
-    public static string? File { get; set; }
-    public static InputMediaType Type { get; set; }
+    public string? File { get; set; }
+    public InputMediaType Type { get; set; }
+    public MediaFilesObject() { }
+
+    public MediaFilesObject(string? _file, InputMediaType _type)
+    {
+        File = _file;
+        Type = _type;
+    }
+
 }
 public class FlowerObject
 {
@@ -26,9 +34,9 @@ public class FlowerObject
     */
     public string? ChatId;
     /**
-     * Массив медиафайлов (ключ-значение) с ID файла и Типом файла.
+     * Лист медиафайлов (ключ-значение) с ID файла и Типом файла.
      */
-    public KeyValuePair<string, InputMediaType>[]? MediaFiles;
+    public List<KeyValuePair<string, InputMediaType>>? MediaFiles;
     /**
      * Название товара товара (цветка)
      */

@@ -15,8 +15,69 @@ namespace FlowerSellerTgBot.Model
             _dataBase = dataBase;
 
         }
-   
-        private void test_one()
+
+        T[] InitializeArray<T>(int length) where T : new()
+        {
+            T[] array = new T[length];
+            for (int i = 0; i < length; ++i)
+            {
+                array[i] = new T();
+            }
+
+            return array;
+        }
+
+        private void DownloadDB()
+        {
+            var flowerObjectList = _dataBase.GetFlowerObject("Category#1");
+
+
+            Console.WriteLine("Product names:");
+
+            foreach (var flowerObject in flowerObjectList)
+            {
+                Console.Write(flowerObject.ProductName);
+                Console.Write(" | ");
+            }
+
+            Console.WriteLine();
+
+            Console.WriteLine("Descriptions:");
+
+            foreach (var flowerObject in flowerObjectList)
+            {
+                Console.Write(flowerObject.Description);
+                Console.Write(" | ");
+            }
+
+            Console.WriteLine();
+
+            Console.WriteLine("Photo keys:");
+
+            foreach (var flowerObject in flowerObjectList)
+            {
+                if (flowerObject.MediaFiles != null)
+                {
+                    for (int i = 0; i < flowerObject.MediaFiles.Count(); i++)
+                    {
+                        if (flowerObject.MediaFiles[i].Value == InputMediaType.Photo)
+                        {
+                            Console.Write(flowerObject.MediaFiles[i].Key + ", ");
+                        }
+                    }
+                    break;
+
+                }
+                else
+                {
+                    Console.WriteLine("MediaFiles == null");
+                }
+            }
+
+            Console.WriteLine();
+        }
+
+        private void LoadToDB()
         {
             //  var categoryString = _dataBase.GetCategories();
 
@@ -25,30 +86,33 @@ namespace FlowerSellerTgBot.Model
 
 
 
-            string[] FileIDP = { "Photo-gdsgds322", "Photo-jrt43y4" };
-            string[] FileIDV = { "Video-hdh5h35j4", "Video-rhdrhr34", "Video-fsdy32y3" };
+            string[] FileIDP = { "Photo-4g-0hgldhl", "Photo-jrjhtgrh35t3", "Photo-he5heh43h4", "Photo-32yh4bedrtbe" };
+            string[] FileIDV = { "Video-yhrthr547u4t", "Video-jsy6tj6565", };
 
-            KeyValuePair<string, InputMediaType>[] MediaFiles_Custom = new KeyValuePair<string, InputMediaType>[3];
 
-            for (int i = 0; i < 3; i++) {
-                for (int b = 0; b < FileIDP.Count() - 1; b++)
-                {
-                    var temp = new KeyValuePair<string, InputMediaType>(FileIDP[b], InputMediaType.Photo);
-                    MediaFiles_Custom[i] = temp;
-                }
+            List<KeyValuePair<string, InputMediaType>>? mediaList = new List<KeyValuePair<string, InputMediaType>>();
+            
+            for (int i = 0; i < FileIDP.Count(); i++)
+            {
+                mediaList.Add(new KeyValuePair<string, InputMediaType>(FileIDP[i], InputMediaType.Photo));
+            }
+
+            for (int i = 0; i < FileIDV.Count(); i++)
+            {
+                mediaList.Add(new KeyValuePair<string, InputMediaType>(FileIDV[i], InputMediaType.Video));
             }
 
             FlowerObject flowerObject = new FlowerObject()
             {
-                CategoryName = "Category#1",
+                CategoryName = "Цветы",
                 ChatId = "awf20f020lf2flsl463g",
-                ProductName = "Лаванда",
-                Description = "Отличная лаванда",
-                MediaFiles = MediaFiles_Custom,
-                Price = "100"
+                ProductName = "Вторая роза",
+                Description = "FlowerRose is good",
+                MediaFiles = mediaList,
+                Price = "A lot of"
             };
 
-            _dataBase.SendToDatabase(flowerObject);
+            _dataBase.SendToDatabase(flowerObject, DatabaseSDK.EnumDB.WITHOUTPHOTO);
 
 
            // _dataBase.SentToDatabasePhoto(FileID, "Роза");
@@ -106,7 +170,8 @@ namespace FlowerSellerTgBot.Model
         public void ConsoleOutput()
         {
             //      test_two();
-            test_one();
+            //LoadToDB();
+              DownloadDB();
         }
 
 
