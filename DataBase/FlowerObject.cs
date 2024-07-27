@@ -21,23 +21,22 @@ public class FlowerObject
     */
     public string? ChatId;
     
-    private KeyValuePair<string, InputMediaType>[]? _mediaFiles;
+    private List<KeyValuePair<string, InputMediaType>>? _mediaFiles;
     /**
-     * Массив медиафайлов (ключ-значение) с ID файла и Типом файла.
+     * Список медиафайлов (ключ-значение) с ID файла и Типом файла.
      */
-    public KeyValuePair<string, InputMediaType>[]? MediaFiles
+    public List<KeyValuePair<string, InputMediaType>>? MediaFiles
     {
         get { return _mediaFiles; }
         set
         {
-            if (value != null)
+            if (value == null)
+                return;
+            int mediaLength = value.Count < 3 ? value.Count : 3;
+            _mediaFiles = new List<KeyValuePair<string, InputMediaType>>(mediaLength);
+            for (int i = 0; i < mediaLength; i++)
             {
-                int mediaLength = value.Length < 3 ? value.Length : 3;
-                _mediaFiles = new KeyValuePair<string, InputMediaType>[mediaLength];
-                for (int i = 0; i < mediaLength; i++)
-                {
-                    _mediaFiles[i] = value[i];
-                }
+                _mediaFiles[i] = value[i];
             }
         }
     }
@@ -58,11 +57,11 @@ public class FlowerObject
     /// </summary>
     /// <param name="categoryName">Имя категории</param>
     /// <param name="chatId">chatID</param>
-    /// <param name="mediaFiles">Массив мадиафайлов (ID - Тип)</param>
+    /// <param name="mediaFiles">Список мадиафайлов (ID - Тип)</param>
     /// <param name="productName">Имя цветка</param>
     /// <param name="description">Описание</param>
     /// <param name="price">Цена</param>
-    public FlowerObject(string? categoryName, string? chatId, KeyValuePair<string, InputMediaType>[]? mediaFiles, string? productName, string? description, string? price)
+    public FlowerObject(string? categoryName, string? chatId, List<KeyValuePair<string, InputMediaType>>? mediaFiles, string? productName, string? description, string? price)
     {
         CategoryName = categoryName;
         ChatId = chatId;
@@ -78,10 +77,10 @@ public class FlowerObject
     /// <param name="id">ID чата</param>
     public async Task Send(ITelegramBotClient bot, ChatId id)
     {
-        if (MediaFiles == null || MediaFiles.Length == 0)
+        if (MediaFiles == null || MediaFiles.Count == 0)
             throw new NullReferenceException("Отсутствуют медиафайлы");
         List<IAlbumInputMedia> inputMedia = new List<IAlbumInputMedia>(3);
-        for (int i = 0; i < (MediaFiles.Length < 3 ? MediaFiles.Length : 3); i++)
+        for (int i = 0; i < (MediaFiles.Count < 3 ? MediaFiles.Count : 3); i++)
         {
             KeyValuePair<string, InputMediaType> keyValuePair = MediaFiles[i];
             if (keyValuePair.Value == InputMediaType.Photo)
