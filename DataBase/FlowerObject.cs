@@ -71,6 +71,25 @@ public class FlowerObject
         Price = price;
     }
     /// <summary>
+    /// Метод добавления медиафайла объекту
+    /// </summary>
+    /// <param name="id">Telegram Id файла </param>
+    /// <param name="type">Тип файла</param>
+    /// <returns>true - если файл был добавлен, иначе - false</returns>
+    public bool AddMediafile(string id, InputMediaType type)
+    {
+        KeyValuePair<string, InputMediaType> kvpair = new KeyValuePair<string, InputMediaType>(id, type);
+        if (MediaFiles == null)
+        {
+            MediaFiles = new List<KeyValuePair<string, InputMediaType>> { kvpair };
+            return true;
+        }
+        if (MediaFiles.Count >= 3)
+            return false;
+        MediaFiles.Add(kvpair);
+        return true;
+    }
+    /// <summary>
     /// Метод отпраки объекта - медиафайлов и описания
     /// </summary>
     /// <param name="bot">Бот-отправитель</param>
