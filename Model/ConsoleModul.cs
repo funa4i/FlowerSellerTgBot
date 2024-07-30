@@ -27,56 +27,60 @@ namespace FlowerSellerTgBot.Model
             return array;
         }
 
-        private void DownloadDB()
+        private void DownloadDBSec()
         {
-            var flowerObjectList = _dataBase.GetFlowerObject("Category#1");
+            var listNames = _dataBase.GetNamesProduct("Цветы");
 
-
-            Console.WriteLine("Product names:");
-
-            foreach (var flowerObject in flowerObjectList)
+            for (int i = 0; i < listNames.Count; i++)
             {
-                Console.Write(flowerObject.ProductName);
-                Console.Write(" | ");
-            }
+                var flowerObject = _dataBase.GetFlowerObject(listNames[i]);
 
-            Console.WriteLine();
+                Console.Write("Category: " + flowerObject.CategoryName);
 
-            Console.WriteLine("Descriptions:");
+                Console.WriteLine();
 
-            foreach (var flowerObject in flowerObjectList)
-            {
-                Console.Write(flowerObject.Description);
-                Console.Write(" | ");
-            }
+                Console.Write("Name: " + flowerObject.ProductName + " | Description: " + flowerObject.Description);
 
-            Console.WriteLine();
+                Console.WriteLine();
 
-            Console.WriteLine("Photo keys:");
+                Console.Write("ChatId: " + flowerObject.ChatId + " | Price: " + flowerObject.Price);
 
-            foreach (var flowerObject in flowerObjectList)
-            {
-                if (flowerObject.MediaFiles != null)
+                Console.WriteLine();
+
+                Console.Write("MediaFiles: \nPhotos - ");
+
+
+                foreach (var media in flowerObject.MediaFiles)
                 {
-                    for (int i = 0; i < flowerObject.MediaFiles.Count(); i++)
+                    if (media.Value == InputMediaType.Photo)
                     {
-                        if (flowerObject.MediaFiles[i].Value == InputMediaType.Photo)
-                        {
-                            Console.Write(flowerObject.MediaFiles[i].Key + ", ");
-                        }
+                        Console.Write(media.Key + " ");
                     }
-                    break;
+                }
 
-                }
-                else
+
+                Console.WriteLine();
+                Console.Write("Videos - ");
+
+                foreach (var media in flowerObject.MediaFiles)
                 {
-                    Console.WriteLine("MediaFiles == null");
+                    if (media.Value == InputMediaType.Video)
+                    {
+                        Console.Write(media.Key + " ");
+                    }
                 }
+
+
+                Console.WriteLine();
+
+                Console.WriteLine();
+
+                Console.WriteLine();
+
             }
 
-            Console.WriteLine();
         }
-
+   
         private void LoadToDB()
         {
             //  var categoryString = _dataBase.GetCategories();
@@ -112,7 +116,7 @@ namespace FlowerSellerTgBot.Model
                 Price = "A lot of"
             };
 
-            _dataBase.SendToDatabase(flowerObject, DatabaseSDK.EnumDB.WITHOUTPHOTO);
+            _dataBase.SendToDatabase(flowerObject);
 
 
            // _dataBase.SentToDatabasePhoto(FileID, "Роза");
@@ -139,30 +143,12 @@ namespace FlowerSellerTgBot.Model
         private void test_two()
         {
 
-            var list_prod = _dataBase.GetProductListPairFromCategory("Цветы");  
-
-            Console.WriteLine("Product List");
-
-            foreach (var item in list_prod)
-            {
-                Console.WriteLine(item);
-            }
-            
         }
 
         private void test_third()
         {
       
-            var obj_rel_two = _dataBase.GetCategoryListPair();
 
-
-
-            Console.WriteLine("Category list");
-
-            foreach (var item_two in obj_rel_two)
-            {
-                Console.WriteLine(item_two);
-            }
         }
 
 
@@ -171,7 +157,11 @@ namespace FlowerSellerTgBot.Model
         {
             //      test_two();
             //LoadToDB();
-              DownloadDB();
+            //DownloadDBSec();
+            //_dataBase.DeleteCategory("Цветы");
+
+
+
         }
 
 
