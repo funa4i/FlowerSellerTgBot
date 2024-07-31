@@ -71,6 +71,12 @@ public class FlowerObject
         Price = price;
     }
     /// <summary>
+    /// Пустой конструктор
+    /// </summary>
+    public FlowerObject()
+    {
+    }
+    /// <summary>
     /// Метод добавления медиафайла объекту
     /// </summary>
     /// <param name="id">Telegram Id файла </param>
@@ -90,7 +96,7 @@ public class FlowerObject
         return true;
     }
     /// <summary>
-    /// Метод отпраки объекта - медиафайлов и описания
+    /// Метод отправки объекта - медиафайлов и описания
     /// </summary>
     /// <param name="bot">Бот-отправитель</param>
     /// <param name="id">ID чата</param>
@@ -107,7 +113,7 @@ public class FlowerObject
             else if (keyValuePair.Value == InputMediaType.Video)
                 inputMedia.Add(new InputMediaVideo(keyValuePair.Key));
         }
-        ((InputMedia)inputMedia[0]).Caption = $"{ProductName} - {Price}\n" + $"{Description}";
+        ((InputMedia)inputMedia[0]).Caption = $"Название: {ProductName}\n" + $"Цена: {Price} руб.\n" + $"Категория: {CategoryName}\n" + $"\n{Description}";
         await bot.SendMediaGroupAsync(id, inputMedia);
     }
 }
