@@ -3,28 +3,24 @@ using FlowerSellerTgBot.MachineStates.Enums;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.ReplyMarkups;
+using FlowerSellerTgBot.DataBase;
+using Telegram.Bot.Types.Enums;
 
 namespace FlowerSellerTgBot.MachineStates
 {
     public class MachineStateProduct : MachineState
     {
         // TODO: Заменить на объект FloweObject после его доработки <<
-        public string? ProductName { get; private set; }
-
-        public string? Price { get; private set; }
-
-        public string? Description { get; private set; }
-
-        public FileBase?[] media;
+        public FlowerObject flowerObject { get; private set; }
         // Все поля выше >>
-
+        private List<KeyValuePair<string, InputMediaType>> _mediaFiles;
         private States state;
 
         public MachineStateProduct(long ChatId) : base(ChatId)
         {
-
+            flowerObject = new FlowerObject();
+            _mediaFiles = new ();
             state = States.None;
-            media = new FileBase?[3];
         }
 
         // TODO: Сделать выбор категории + изменения количества
@@ -44,9 +40,9 @@ namespace FlowerSellerTgBot.MachineStates
                         await bot.SendTextMessageAsync(_chatId, "Извините, я вас не понял. Пожалуйста, введите название товара");
                         break;
                     }
-                    if (!message.Text.Equals("Оставить прежнее") && string.IsNullOrEmpty(ProductName))
+                    if (!message.Text.Equals("Оставить прежнее") && string.IsNullOrEmpty(flowerObject.ProductName))
                     {
-                        ProductName = message.Text;
+                        flowerObject.ProductName = message.Text;
                         
                     }
                     state = States.Price;
@@ -59,9 +55,9 @@ namespace FlowerSellerTgBot.MachineStates
                         await bot.SendTextMessageAsync(_chatId, "Извините, я вас не понял. Пожалуйста, введите цену товара");
                         break;
                     }
-                    if (!message.Text.Equals("Оставить прежнее") && string.IsNullOrEmpty(Price))
+                    if (!message.Text.Equals("Оставить прежнее") && string.IsNullOrEmpty(flowerObject.Price))
                     {
-                        Price = message.Text;
+                        flowerObject.Price = message.Text;
                         
                     }
                     state = States.Desription;
@@ -74,18 +70,21 @@ namespace FlowerSellerTgBot.MachineStates
                         await bot.SendTextMessageAsync(_chatId, "Извините, я вас не понял. Пришлите текстовое описание товара");
                         break;
                     }
-                    if (!message.Text.Equals("Оставить прежнее") && string.IsNullOrEmpty(Description))
+                    if (!message.Text.Equals("Оставить прежнее") && string.IsNullOrEmpty(flowerObject.Description))
                     {
-                        Description = message.Text;
+                        flowerObject.Description = message.Text;
                         
                     }
                     state = States.Media;
                     await bot.SendTextMessageAsync(_chatId, "Пришлите 1-3 фото или видео");
                     break;
                 case States.Media:
-                    if (((message.Text?.Equals("Да") ?? false) || (message.Text?.Equals("Оставить прежнее") ?? false))
-                        && Array.IndexOf(media, null) != 0)
+                    if ((_mediaFiles.Count == 3 || 
+                        (message.Text?.Equals("Да") ?? false) || 
+                        (message.Text?.Equals("Оставить прежнее") ?? false)) && 
+                        _mediaFiles.Count != 0)
                     {
+                        flowerObject.MediaFiles = _mediaFiles.ToArray();
                         var rpk = new ReplyKeyboardMarkup(new KeyboardButton[]
                         {
                             new KeyboardButton("1"),
@@ -97,7 +96,7 @@ namespace FlowerSellerTgBot.MachineStates
                         rpk.ResizeKeyboard = true;
 
                         await bot.SendTextMessageAsync(_chatId, "Отлично, проверьте, все ли верно?");
-                        await bot.SendTextMessageAsync(_chatId, "<<Товар>>");
+                        await flowerObject.Send(bot, _chatId);
                         await bot.SendTextMessageAsync(_chatId,
                             "1. Изменить название\n" +
                             "2. Изменить цену\n" +
@@ -114,13 +113,20 @@ namespace FlowerSellerTgBot.MachineStates
                         break;
                     }
 
-                    if (Array.IndexOf(media, null) != -1)
+                    if (_mediaFiles.Count < 3)
                     {
-                        //TODO: Заменить тип массива(посл добавления объекта)
-                        media[Array.IndexOf(media, null)] = message.Photo?.Last() != null ? message.Photo?.Last() : message.Video;
-                        var rpk = new ReplyKeyboardMarkup(new KeyboardButton[] { "Да", "Нет" });
-                        rpk.ResizeKeyboard = true;
-                        await bot.SendTextMessageAsync(_chatId, Array.IndexOf(media, null) + " из 3, это все?", replyMarkup: rpk);
+                        
+                        InputMediaType inputMediaType = 
+                            message.Type == MessageType.Video ? InputMediaType.Video : InputMediaType.Photo;
+
+                        string fileId =
+                            inputMediaType == InputMediaType.Video ? message.Video.FileId : message.Photo.Last().FileId;
+
+                        _mediaFiles.Add(new(fileId, inputMediaType));
+                            var rpk = new ReplyKeyboardMarkup(new KeyboardButton[] { "Да"});
+                            rpk.ResizeKeyboard = true;
+                            await bot.SendTextMessageAsync(_chatId, _mediaFiles.Count + " из 3, это все?", replyMarkup: rpk);
+                        
                     }
                     break;
                 case States.RefactorState:

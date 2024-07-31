@@ -71,6 +71,10 @@ public class FlowerObject
         Description = description;
         Price = price;
     }
+
+    public FlowerObject() 
+    {
+    }
     /// <summary>
     /// Метод отпраки объекта - медиафайлов и описания
     /// </summary>
