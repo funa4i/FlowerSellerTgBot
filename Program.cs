@@ -1,6 +1,7 @@
 using Telegram.Bot;
-using FlowerSellerTgBot.DataBase;
 using FlowerSellerTgBot.Model;
+using Microsoft.EntityFrameworkCore;
+using FlowerSellerTgBot.Model.DataBase;
 
 namespace FlowerSellerTgBot
 {
@@ -17,18 +18,34 @@ namespace FlowerSellerTgBot
             
             builder.Services.AddHttpClient<ITelegramBotClient, TelegramBotClient>((client, _) => new TelegramBotClient(token, client));
 
-            builder.Services.AddSingleton<IDataBase, DataBaseOwn>();
+            //реализация db
+            builder.Services.AddSingleton<IDataBase, DatabaseSDK>();
+
             builder.Services.AddSingleton<IModulBot, FlowerBotModul>();
+
+            builder.Services.AddDbContext<DataContext>(options =>
+            {
+                options.UseNpgsql(builder.Configuration.GetConnectionString("ServerConn"));
+            });
+
             
+
+            //
+            ConsoleModul consoleModul = new ConsoleModul(new DatabaseSDK());
+
+            consoleModul.ConsoleOutput();
+
             builder.Services.AddControllers();
+
             builder.Services.ConfigureTelegramBotMvc();
             
             builder.Services.ConfigureTelegramBot<Microsoft.AspNetCore.Http.Json.JsonOptions>(opt => opt.SerializerOptions);
-            
-            
+
+  
+
+
             var app = builder.Build();
 
-            
             app.UseHttpsRedirection();
 
             app.UseAuthorization();
@@ -36,6 +53,8 @@ namespace FlowerSellerTgBot
             app.MapControllers();
             
             app.Run();
+
+      
         }
     }
 }
