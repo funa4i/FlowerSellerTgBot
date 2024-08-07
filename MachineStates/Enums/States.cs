@@ -3,11 +3,12 @@
     public enum States
     {
         None = -1,
-        Name = 0,
-        Price = 1,
-        Desription = 2,
-        Media = 3,
-        RefactorState = 4,
-        Done = 5
+        Category = 0,
+        Name = 1,
+        Price = 2,
+        Desription = 3,
+        Media = 4,
+        RefactorState = 5,
+        Done = 6
     }
 }

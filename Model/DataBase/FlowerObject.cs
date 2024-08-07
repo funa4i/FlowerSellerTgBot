@@ -44,12 +44,15 @@ public class FlowerObject
         set
         {
             if (value == null)
+            {
+                _mediaFiles = value;
                 return;
+            }
             int mediaLength = value.Count < 3 ? value.Count : 3;
             _mediaFiles = new List<KeyValuePair<string, InputMediaType>>(mediaLength);
             for (int i = 0; i < mediaLength; i++)
             {
-                _mediaFiles[i] = value[i];
+                _mediaFiles.Add(value[i]);
             }
         }
     }

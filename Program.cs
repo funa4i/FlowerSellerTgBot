@@ -28,13 +28,6 @@ namespace FlowerSellerTgBot
                 options.UseNpgsql(builder.Configuration.GetConnectionString("ServerConn"));
             });
 
-            
-
-            //
-            ConsoleModul consoleModul = new ConsoleModul(new DatabaseSDK());
-
-            consoleModul.ConsoleOutput();
-
             builder.Services.AddControllers();
 
             builder.Services.ConfigureTelegramBotMvc();

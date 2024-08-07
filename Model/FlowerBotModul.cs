@@ -4,7 +4,6 @@ using System.Collections;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
-
 namespace FlowerSellerTgBot.Model
 {
     public class FlowerBotModul : IModulBot
@@ -17,12 +16,6 @@ namespace FlowerSellerTgBot.Model
         public FlowerBotModul(IDataBase dataBase)
         {
             _dataBase = dataBase;
-<<<<<<< HEAD
-            
-    
-=======
-            _dataBase.connectBase();
->>>>>>> Feature-ModelTryDB
         }
 
 
@@ -32,11 +25,7 @@ namespace FlowerSellerTgBot.Model
         {
             if (!_personInMachine.ContainsKey(message.Chat.Id))
             {
-                _personInMachine.Add(message.Chat.Id, new MachineStateProduct(message.Chat.Id));
-<<<<<<< HEAD
-                _personInMachine[message.Chat.Id].MachineStateDo(bot, message);
-                
-=======
+                _personInMachine.Add(message.Chat.Id, new MachineStateProduct(message.Chat.Id, _dataBase.GetCategories()));
 
                 await _personInMachine[message.Chat.Id].MachineStateDo(bot, message);
 
@@ -56,7 +45,6 @@ namespace FlowerSellerTgBot.Model
 
                 _personInMachine[(message.Chat.Id)].addLifeTimeListener(deleteMashineState);
                 _personInMachine[message.Chat.Id].addActionStateDoneListener(saveMachineStateCategory);
->>>>>>> Feature-ModelTryDB
             }
         }
 
@@ -79,7 +67,7 @@ namespace FlowerSellerTgBot.Model
                 }
                 else
                 {
-                    await bot.SendTextMessageAsync(message.Chat.Id, "Эхо: " + message.Text);
+                    await bot.SendTextMessageAsync(message.Chat.Id, "Эхо: " + _dataBase.GetNamesProduct("Семена").Count);
                 }
             }
         }
@@ -99,12 +87,18 @@ namespace FlowerSellerTgBot.Model
 
         private void saveMachineStateProduct(MachineState state)
         {
-            // TODO: Вызвать сохранение в бд
+            if (state is MachineStateProduct s)
+            {
+                _dataBase.SendToDatabase(s.flowerObject);
+            }
         }
 
         private void saveMachineStateCategory(MachineState state)
         {
-            // TODO: Вазвать сохранение категории
+            if (state is MachineStateCategory s)
+            {
+                _dataBase.CreateNewCategory(s.Name);
+            }
         }
 
 

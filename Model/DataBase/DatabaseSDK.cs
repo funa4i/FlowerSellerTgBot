@@ -13,13 +13,12 @@ namespace FlowerSellerTgBot.Model.DataBase
     public class DatabaseSDK : IDataBase
     {
         private readonly DataContext _db;
-        private readonly ILogger _logger;
+        private readonly ILogger<BotController> _logger;
 
-        public DatabaseSDK()
+        public DatabaseSDK(ILogger<BotController> logger)
         {
             _db = new DataContext();
-
-            _logger = LoggerFactory.Create(builder => builder.AddConsole()).CreateLogger(string.Empty);
+            _logger = logger;
         }
 
         T[] InitializeArray<T>(int length) where T : new()
