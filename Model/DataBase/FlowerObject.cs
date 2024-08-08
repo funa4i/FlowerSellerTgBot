@@ -9,20 +9,6 @@ namespace FlowerSellerTgBot.Model.DataBase;
 /**
  * Класс, описывающий объект-цветок и его методы
  */
-
-public class MediaFilesObject
-{
-    public string? File { get; set; }
-    public InputMediaType Type { get; set; }
-    public MediaFilesObject() { }
-
-    public MediaFilesObject(string? _file, InputMediaType _type)
-    {
-        File = _file;
-        Type = _type;
-    }
-
-}
 public class FlowerObject
 {
     /**
@@ -68,6 +54,11 @@ public class FlowerObject
      * Цена товара (цветка)
      */
     public string? Price;
+    /**
+     * Количество товара
+     */
+    public int? Amount;
+    
     /// <summary>
     /// Конструктор объекта-цветка
     /// </summary>
@@ -77,7 +68,8 @@ public class FlowerObject
     /// <param name="productName">Имя цветка</param>
     /// <param name="description">Описание</param>
     /// <param name="price">Цена</param>
-    public FlowerObject(string? categoryName, string? chatId, List<KeyValuePair<string, InputMediaType>>? mediaFiles, string? productName, string? description, string? price)
+    /// <param name="amount">Количество</param>>
+    public FlowerObject(string? categoryName, string? chatId, List<KeyValuePair<string, InputMediaType>>? mediaFiles, string? productName, string? description, string? price, int? amount)
     {
         CategoryName = categoryName;
         ChatId = chatId;
@@ -85,6 +77,7 @@ public class FlowerObject
         ProductName = productName;
         Description = description;
         Price = price;
+        Amount = amount;
     }
     /// <summary>
     /// Пустой конструктор
@@ -129,7 +122,7 @@ public class FlowerObject
             else if (keyValuePair.Value == InputMediaType.Video)
                 inputMedia.Add(new InputMediaVideo(keyValuePair.Key));
         }
-        ((InputMedia)inputMedia[0]).Caption = $"Название: {ProductName}\n" + $"Цена: {Price} руб.\n" + $"Категория: {CategoryName}\n" + $"\n{Description}";
+        ((InputMedia)inputMedia[0]).Caption = $"Название: {ProductName}\n" + $"Цена: {Price} руб.\n" + $"Категория: {CategoryName}\n" + $"Количество: {Amount} шт.\n" + $"\n{Description}";
         await bot.SendMediaGroupAsync(id, inputMedia);
     }
 }
