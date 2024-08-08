@@ -57,7 +57,7 @@ public class FlowerObject
     /**
      * Количество товара
      */
-    public int? Amount;
+    public int Amount;
     
     /// <summary>
     /// Конструктор объекта-цветка
@@ -69,7 +69,7 @@ public class FlowerObject
     /// <param name="description">Описание</param>
     /// <param name="price">Цена</param>
     /// <param name="amount">Количество</param>>
-    public FlowerObject(string? categoryName, string? chatId, List<KeyValuePair<string, InputMediaType>>? mediaFiles, string? productName, string? description, string? price, int? amount)
+    public FlowerObject(string? categoryName, string? chatId, List<KeyValuePair<string, InputMediaType>>? mediaFiles, string? productName, string? description, string? price, int amount)
     {
         CategoryName = categoryName;
         ChatId = chatId;

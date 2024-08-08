@@ -171,7 +171,7 @@ namespace FlowerSellerTgBot.Model.DataBase
             }
         }
 
-        private void SendToDatabaseProduct(string? _productName, string? _description, int _categoryId, string? _price, int _sellerId)
+        private void SendToDatabaseProduct(string? _productName, string? _description, int _categoryId, string? _price, int _sellerId, int _amount)
         {
             ProductObject productObject = new ProductObject()
             {
@@ -179,7 +179,8 @@ namespace FlowerSellerTgBot.Model.DataBase
                 Description = _description,
                 CategoryId = _categoryId,
                 Price = _price,
-                SellerId = _sellerId
+                SellerId = _sellerId, 
+                Amount = _amount
             };
 
             _db.productObjects.Add(productObject);
@@ -207,7 +208,8 @@ namespace FlowerSellerTgBot.Model.DataBase
                 flowerObject.Description, 
                 GetIdCategory(flowerObject.CategoryName), 
                 flowerObject.Price, 
-                GetIdSeller(flowerObject.ChatId)
+                GetIdSeller(flowerObject.ChatId),
+                flowerObject.Amount
             );
 
 
@@ -215,7 +217,7 @@ namespace FlowerSellerTgBot.Model.DataBase
 
             SendToDatabaseVideo(flowerObject.MediaFiles, flowerObject.ProductName);
 
-            _logger.LogInformation("объект загружен в бд");
+            _logger.LogInformation("Объект загружен в бд");
         }
 
         public void CreateNewCategory(string? name_category)
@@ -371,8 +373,8 @@ namespace FlowerSellerTgBot.Model.DataBase
                         Description = products.Description,
                         Price = products.Price,
                         ChatId = chatId,
-                        MediaFiles = mediaFiles
-
+                        MediaFiles = mediaFiles,
+                        Amount = products.Amount
                     };
                 }
             }
