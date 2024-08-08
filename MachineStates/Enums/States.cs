@@ -6,9 +6,10 @@
         Category = 0,
         Name = 1,
         Price = 2,
-        Desription = 3,
-        Media = 4,
-        RefactorState = 5,
-        Done = 6
+        Amount = 3,
+        Desription = 4,
+        Media = 5,
+        RefactorState = 6,
+        Done = 7
     }
 }
