@@ -12,6 +12,10 @@ namespace FlowerSellerTgBot.Model.DataBase;
 public class FlowerObject
 {
     /**
+     * ID продукта в БД
+     */
+    public int ProductId = -1;
+    /**
      * Название категории товара
      */
     public string? CategoryName;
