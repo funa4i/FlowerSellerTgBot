@@ -67,7 +67,7 @@ namespace FlowerSellerTgBot.Model
                 }
                 else
                 {
-                    await bot.SendTextMessageAsync(message.Chat.Id, "Эхо: " + _dataBase.GetNamesProduct("Семена").Count);
+                    await bot.SendTextMessageAsync(message.Chat.Id, "Эхо: " + _dataBase.GetIdProductsFromCategory("Семена").Count);
                 }
             }
         }
