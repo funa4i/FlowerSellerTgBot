@@ -17,9 +17,7 @@ namespace FlowerSellerTgBot.Model
         {
             _dataBase = dataBase;
         }
-
-
-
+        
         // Создание машинного сосотояния, для нового продукта
         public async void startMachineStateProduct(ITelegramBotClient bot, Message message)
         {
@@ -47,8 +45,20 @@ namespace FlowerSellerTgBot.Model
                 _personInMachine[message.Chat.Id].addActionStateDoneListener(saveMachineStateCategory);
             }
         }
-
-
+        // Создание машинного состояния для редактирования (с соответствующего этапа)
+        private async void StartRefactorMachineStateProduct(ITelegramBotClient bot, Message message)
+        {
+            if (_personInMachine.ContainsKey(message.Chat.Id)) //Если уже есть машинное состояния для этого чата - выходим
+                return;
+            //Ниже создается новый flowerObject. В проде цветок будет получаться из БД по названию из сообщения пользователя
+            FlowerObject flower = new FlowerObject("Категория", message.Chat.Id.ToString(), new List<KeyValuePair<string, InputMediaType>>(), 
+                "цветок", "Описание", "150", 20);
+            flower.AddMediafile("AgACAgIAAxkBAAIINma6GEgx5hwWok267ETFgIN-LqCcAAJi4DEbD_3RSXqRmqu70YP0AQADAgADeAADNQQ", InputMediaType.Photo);
+            MachineStateProduct state = new MachineStateProduct(message.Chat.Id, _dataBase.GetCategories(), flower);
+            _personInMachine.Add(message.Chat.Id, state);
+            await state.DoRefactorState(bot, message);
+            //**отправление отредактированного продукта**
+        }
         public async Task handleMessage(ITelegramBotClient bot, Message message)
         {
             if (_personInMachine.ContainsKey(message.Chat.Id))
@@ -58,16 +68,20 @@ namespace FlowerSellerTgBot.Model
             }
             else if (message.Type == MessageType.Text) ;
             {
-                if (message.Text.Equals("/доб продукт"))
+                switch (message.Text)
                 {
-                    this.startMachineStateProduct(bot, message);
-                }
-                else if(message.Text == "/доб категорию") {
-                    this.startMachineStateCategory(bot, message);
-                }
-                else
-                {
-                    await bot.SendTextMessageAsync(message.Chat.Id, "Эхо: " + _dataBase.GetNamesProduct("Семена").Count);
+                    case "/доб продукт":
+                        startMachineStateProduct(bot, message);
+                        break;
+                    case "/доб категорию":
+                        startMachineStateCategory(bot, message);
+                        break;
+                    case "/ред продукт":
+                        StartRefactorMachineStateProduct(bot, message);
+                        break;
+                    default:
+                        await bot.SendTextMessageAsync(message.Chat.Id, "Эхо: " + _dataBase.GetNamesProduct("Семена").Count);
+                        break;
                 }
             }
         }
