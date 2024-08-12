@@ -12,6 +12,8 @@ namespace FlowerSellerTgBot.Model.DataBase.DbObjects
 
         public int SellerId { get; set; }
 
+        public string? MediaKey { get; set; }
+
         public string? ProductName { get; set; }
 
         public string? Description { get; set; }

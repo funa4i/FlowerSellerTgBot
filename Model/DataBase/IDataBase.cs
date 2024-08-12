@@ -16,7 +16,7 @@ namespace FlowerSellerTgBot.Model.DataBase
         public void CreateNewSeller(string? chatId); //Создание нового продавца в бд
         public void DeleteCategory(string? name_category); //Удаление категории вместе с продуктами + медиафайлы
         public void DeleteSeller(string? chatId); //Удаление продавца вместе с продуктами + медиафайлы
-        public void DeleteProduct(string? name_product); //Удаление продукта вместе с медиафайлами
+        public void DeleteProduct(int productId); //Удаление продукта вместе с медиафайлами
 
     }
 }

@@ -87,7 +87,7 @@ namespace FlowerSellerTgBot.Model
 
             // Console.WriteLine("Отправка объекта");
 
-
+            _dataBase.CreateNewCategory("Цветы");
 
 
             string[] FileIDP = { "Photo-4g-0hgldhl", "Photo-jrjhtgrh35t3", "Photo-he5heh43h4", "Photo-32yh4bedrtbe" };
@@ -151,15 +151,9 @@ namespace FlowerSellerTgBot.Model
 
         }
 
-
-
         public void ConsoleOutput()
         {
-            //      test_two();
-            //LoadToDB();
-            //DownloadDBSec();
-            //_dataBase.DeleteCategory("Цветы");
-
+            LoadToDB();
 
 
         }
