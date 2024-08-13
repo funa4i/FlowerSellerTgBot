@@ -12,6 +12,9 @@ namespace FlowerSellerTgBot.Model.DataBase
         public DbSet<PhotoObject> photoObjects { get; set; } = null!;
         public DbSet<VideoObject> videoObjects { get; set; } = null!;
         public DbSet<SellerObject> sellerObjects { get; set; } = null!;
+        public DbSet<CartObject> cartObjects { get; set; }
+        public DbSet<ProductCartObject> cartproductObjects { get; set; }
+
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             if (!optionsBuilder.IsConfigured)
