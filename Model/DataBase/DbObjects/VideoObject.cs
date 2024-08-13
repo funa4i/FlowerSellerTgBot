@@ -8,6 +8,6 @@ namespace FlowerSellerTgBot.Model.DataBase.DbObjects
         [Key]
         public string? FileId { get; set; }
 
-        public int VideoId { get; set; }
+        public string? VideoKey { get; set; }
     }
 }
