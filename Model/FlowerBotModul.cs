@@ -4,6 +4,8 @@ using System.Collections;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
+using Telegram.Bot.Types.ReplyMarkups;
+
 namespace FlowerSellerTgBot.Model
 {
     public class FlowerBotModul : IModulBot
@@ -12,6 +14,10 @@ namespace FlowerSellerTgBot.Model
         private readonly IDataBase _dataBase;
 
         private Dictionary<long, MachineState> _personInMachine = new();
+        /// <summary>
+        /// Является ли текущий пользователь продавцом
+        /// </summary>
+        private bool IsSeller = false;
 
         public FlowerBotModul(IDataBase dataBase)
         {
@@ -57,11 +63,18 @@ namespace FlowerSellerTgBot.Model
             MachineStateProduct state = new MachineStateProduct(message.Chat.Id, _dataBase.GetCategories(), flower);
             _personInMachine.Add(message.Chat.Id, state);
             await state.DoRefactorState(bot, message);
-            //**отправление отредактированного продукта**
+            
+            _personInMachine[(message.Chat.Id)].addLifeTimeListener(deleteMashineState);
+            _personInMachine[message.Chat.Id].addActionStateDoneListener(SaveMachineStateProductChanges);
         }
         public async Task handleMessage(ITelegramBotClient bot, Message message)
         {
-            if (_personInMachine.ContainsKey(message.Chat.Id))
+            if (message.Type == MessageType.Text && message.Text.Equals("/start"))
+            {
+                MakeStartReplyKeyboard(message, bot);
+                return;
+            }
+            if (_personInMachine.ContainsKey(message.Chat.Id)) //Если уже есть текущее состояние - переходим на него
             {
                 await _personInMachine[(message.Chat.Id)].MachineStateDo(bot, message);
                 return;
@@ -70,17 +83,17 @@ namespace FlowerSellerTgBot.Model
             {
                 switch (message.Text)
                 {
-                    case "/доб продукт":
+                    case "Добавить товар":
                         startMachineStateProduct(bot, message);
                         break;
-                    case "/доб категорию":
+                    case "Добавить категорию":
                         startMachineStateCategory(bot, message);
                         break;
-                    case "/ред продукт":
+                    case "Редактировать продукт":
                         StartRefactorMachineStateProduct(bot, message);
                         break;
                     default:
-                        await bot.SendTextMessageAsync(message.Chat.Id, "Эхо: " + _dataBase.GetNamesProduct("Семена").Count);
+                        await bot.SendTextMessageAsync(message.Chat.Id, $"Эхо: {message.Text}");
                         break;
                 }
             }
@@ -96,6 +109,16 @@ namespace FlowerSellerTgBot.Model
                 {
                     _personInMachine.Remove(state._chatId);
                 }
+            }
+        }
+        /// <summary>
+        /// Сохранение изменений(!) отредактированного объекта
+        /// </summary>
+        private void SaveMachineStateProductChanges(MachineState state)
+        {
+            if (state is MachineStateProduct s)
+            {
+                _dataBase.ChangeProduct(s.flowerObject);
             }
         }
 
@@ -114,8 +137,54 @@ namespace FlowerSellerTgBot.Model
                 _dataBase.CreateNewCategory(s.Name);
             }
         }
-
-
-        
+        /// <summary>
+        /// Метод, проверяющий является ли пользователь продавцом
+        /// </summary>
+        /// <returns>если да - true, иначе - false</returns>
+        private bool UserIsSeller(Message message)
+        {
+            using StreamReader reader = new StreamReader("Sellers.txt");
+            string? line;
+            while ((line = reader.ReadLine()) != null)
+            {
+                if (line.Equals(message.Chat.Id.ToString()))
+                    return true;
+            }
+            reader.Dispose();
+            return false;
+        }
+        /// <summary>
+        /// Метод, определяющий статус пользователя и создающий клавиатуру
+        /// </summary>
+        /// <param name="mes">Сообщение, отправляемое пользователю (Опционально. По умолчанию - начальное привествие)</param>
+        private async Task MakeStartReplyKeyboard(Message message, ITelegramBotClient bot, string mes = "")
+        {
+            if (message.Type == MessageType.Text && message.Text.Equals("/start"))
+            {
+                IsSeller = UserIsSeller(message); //имитация авторизации
+                List<KeyboardButton[]> rows = new List<KeyboardButton[]>(); //Колонны. Сделаны для красивого вывода  
+                KeyboardButton[] kb = new []
+                {
+                    new KeyboardButton("Каталог"),
+                    new KeyboardButton("Корзина")
+                };
+                rows.Add(kb);
+                if (IsSeller)
+                {
+                    KeyboardButton[] kb1 = new []
+                    {
+                        new KeyboardButton("Добавить товар"),
+                        new KeyboardButton("Добавить категорию")
+                    };
+                    rows.Add(kb1);
+                }
+                var rpk = new ReplyKeyboardMarkup(rows)
+                {
+                    ResizeKeyboard = true,
+                    IsPersistent = true
+                };
+                await bot.SendTextMessageAsync(message.Chat.Id, string.IsNullOrEmpty(mes.Trim()) ? "Привет! Это бот-магазин цветов, как я могу вам помочь?" : mes, replyMarkup: rpk);
+            }
+        }
     }
 }

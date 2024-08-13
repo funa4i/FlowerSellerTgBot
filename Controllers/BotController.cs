@@ -24,11 +24,8 @@ namespace FlowerSellerTgBot.Controllers
         public async void Post([FromBody] Update update)
         {
             long chatId = update.Message.Chat.Id;
-            
             if (update.Type == Telegram.Bot.Types.Enums.UpdateType.Message)
             {
-            //    await _bot.SendTextMessageAsync(chatId, "Echo: " + update.Message.Text);
-            //    _logger.LogInformation(update.Message.Chat.FirstName + " " + update.Message.Chat.LastName + " " + update.Message.Text);
                 await _modulBot.handleMessage(_bot, update.Message);
             }
         }
