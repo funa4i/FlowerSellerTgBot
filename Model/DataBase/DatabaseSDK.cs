@@ -1,10 +1,12 @@
 ﻿using FlowerSellerTgBot.Controllers;
 using FlowerSellerTgBot.Model.DataBase.DbObjects;
+using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
@@ -171,7 +173,7 @@ namespace FlowerSellerTgBot.Model.DataBase
 
         public void ChangeProduct(FlowerObject flowerObject)
         {
-            if (flowerObject.ProductId == -1) { _logger.LogWarning("ChangeProduct: ProductId==-1"); return; }
+            if (flowerObject.ProductId == -1) { _logger.LogError("ChangeProduct: ProductId==-1"); return; }
 
             var productObject = _db.productObjects.Where(c => c.ProductId == flowerObject.ProductId).FirstOrDefault();
 
@@ -182,7 +184,7 @@ namespace FlowerSellerTgBot.Model.DataBase
 
             if (!ChangeRequired(changed))
             {
-                _logger.LogInformation("Изменений продукта не найдено!");
+                _logger.LogWarning("Изменений продукта не найдено!");
                 return;
             }
 
@@ -231,6 +233,84 @@ namespace FlowerSellerTgBot.Model.DataBase
 
             _logger.LogInformation("Продукт успешно изменен!");
         }
+        
+        private bool UserChatIdCartExist(string? chatId)
+        {
+            foreach(var cart in _db.cartObjects)
+            {
+                if (cart.ChatId == chatId)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        public void DeleteAllCart(string? chatId)
+        {
+            if (chatId == null) { _logger.LogError("DeleteAllCart: chatId==null"); return; }
+
+            if (!UserChatIdCartExist(chatId))
+            {
+                _logger.LogError("DeleteAllCart: пользователя не существует!"); 
+                return;
+            }
+
+            var removeCartProductOBJ = from r in _db.cartproductObjects where r.Cartkey == GetCartKey(chatId) select r;
+
+            var removeUser = from r in _db.cartObjects where r.ChatId == chatId select r;
+
+            //удаление всех товаров в корзине по выбранному ключу
+            while (removeCartProductOBJ.Count() > 0)
+            {
+                _db.cartproductObjects.Remove(removeCartProductOBJ.FirstOrDefault());
+                _db.SaveChanges();
+            }
+
+            _db.cartObjects.Remove(removeUser.FirstOrDefault());
+            _db.SaveChanges();
+        }
+
+        private bool CartProductExist(string? cartKey, int productId)
+        {
+            foreach(var cartProduct in _db.cartproductObjects)
+            {
+                if (cartProduct.Cartkey == cartKey && cartProduct.ProductId == productId)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        public void DeleteCart(string? chatId, int productId)
+        {
+
+            if (chatId == null) { _logger.LogError("DeleteCart: chatId==null"); return; }
+
+            var removeUser = from r in _db.cartObjects where r.ChatId == chatId select r;
+
+            var cartKey = GetCartKey(chatId);
+
+            if (!CartProductExist(cartKey, productId))
+            {
+                _logger.LogError("DeleteCart: товара не существует!"); 
+                return;
+            }
+
+            foreach (var cartProduct in _db.cartproductObjects)
+            {
+                if (cartProduct.Cartkey == cartKey && cartProduct.ProductId == productId)
+                {
+                    _db.cartproductObjects.Remove(cartProduct);
+                    break;
+                }
+            }
+
+            _db.SaveChanges();
+        }
 
         public void DeleteSeller(string? chatId)
         {
@@ -247,8 +327,22 @@ namespace FlowerSellerTgBot.Model.DataBase
             _db.SaveChanges();
         }
 
+        
+
         public void DeleteCategory(string? name_category)
         {
+            if (name_category == null)
+            {
+                _logger.LogError("DeleteCategory: name_category == null");
+                return;
+            }
+
+            if (!CategoryDoesExist(name_category))
+            {
+                _logger.LogError("DeleteCategory: Категории не существует!");
+                return;
+            }
+
             var removeCategory = from r in _db.categoryObjects where r.NameOf == name_category select r;
 
             var listId = GetIdProductsFromCategory(name_category);
@@ -264,7 +358,13 @@ namespace FlowerSellerTgBot.Model.DataBase
 
         public void DeleteProduct(int productId)
         {
-            if (productId == -1) { _logger.LogWarning("DeleteProduct: productId==-1");  return; }
+            if (productId == -1) { _logger.LogError("DeleteProduct: productId==-1");  return; }
+
+            if (!ProductIdDBExist(productId))
+            {
+                _logger.LogError("DeleteProduct: Продукта не существует!");
+                return;
+            }
 
             var removePhoto = from r in _db.photoObjects where r.PhotoKey == GetMediaKeyFromId(productId) select r;
 
@@ -289,6 +389,25 @@ namespace FlowerSellerTgBot.Model.DataBase
             //Удаление самого продукта
             _db.productObjects.Remove(removeProduct.FirstOrDefault());
             _db.SaveChanges();
+        }
+
+        public List<int> GetIdProductsFromCart(string? chatId)
+        {
+            List<int> list_ret = new List<int>();
+
+            string cartKeyDB = GetCartKey(chatId);
+
+            var cartproductOBJ = _db.cartproductObjects;
+
+            foreach (var cartk in cartproductOBJ)
+            {
+                if (cartk.Cartkey == cartKeyDB)
+                {
+                    list_ret.Add(cartk.ProductId);
+                }
+            }
+
+            return list_ret;
         }
 
         private string GetMediaKeyFromId(int productId)
@@ -320,13 +439,40 @@ namespace FlowerSellerTgBot.Model.DataBase
             return keys;
         }
 
-        private bool SimilarKey(string key)
+        private List<string> GetAllCartKeys()
+        {
+            List<string> keys = new List<string>();
+
+            var cartOBJ = _db.cartObjects;
+
+            foreach (var cart in cartOBJ)
+            {
+                keys.Add(cart.CartKey);
+            }
+
+            return keys;
+        }
+
+        private bool SimilarKeyMedia(string key)
         {
             var mediaKeys = GetAllMediaKeys();
 
             for (int i = 0; i < mediaKeys.Count; i++)
             {
                 if (mediaKeys[i] == key)
+                    return true;
+            }
+
+            return false;
+        }
+
+        private bool SimilarKeyCart(string key)
+        {
+            var cartKeys = GetAllCartKeys();
+
+            for (int i = 0; i < cartKeys.Count; i++)
+            {
+                if (cartKeys[i] == key)
                     return true;
             }
 
@@ -344,14 +490,157 @@ namespace FlowerSellerTgBot.Model.DataBase
             string key_ret = new string(Enumerable.Repeat(chars, length)
                                 .Select(s => s[random.Next(s.Length)]).ToArray());
 
-            while (SimilarKey(key_ret))
+            while (SimilarKeyMedia(key_ret))
             {
                 key_ret = new string(Enumerable.Repeat(chars, length)
                                 .Select(s => s[random.Next(s.Length)]).ToArray());
             }
 
-
             return "MK-" + key_ret;
+        }
+
+        private string GenerateCartKey()
+        {
+            const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+
+            const int length = 10;
+
+            Random random = new Random();
+
+            string key_ret = new string(Enumerable.Repeat(chars, length)
+                                .Select(s => s[random.Next(s.Length)]).ToArray());
+
+            while (SimilarKeyCart(key_ret))
+            {
+                key_ret = new string(Enumerable.Repeat(chars, length)
+                                .Select(s => s[random.Next(s.Length)]).ToArray());
+            }
+
+            return "CK-" + key_ret;
+        }
+
+        private bool CartChatIdExist(string? chatId)
+        {
+            var cartOBJ = _db.cartObjects;
+
+            foreach (var cart in cartOBJ)
+            {
+                if (cart.ChatId == chatId)
+                    return true;
+            }
+
+            return false;
+        }
+
+        private string GetCartKey(string? chatId)
+        {
+            var cartOBJ = _db.cartObjects;
+
+            foreach (var cart in cartOBJ)
+            {
+                if (cart.ChatId == chatId)
+                    return cart.CartKey;
+            }
+
+            return "";
+        }
+
+        private bool ProductIdCartExist(int productId, string? cartKey)
+        {
+            var cartproductOBJ = _db.cartproductObjects;
+
+            foreach(var cart in cartproductOBJ)
+            {
+                if (cart.Cartkey == cartKey && cart.ProductId == productId)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private bool ProductIdDBExist(int productId)
+        {
+            var allCategories = GetCategories();
+
+            for (int i = 0; i < allCategories.Count(); i++)
+            {
+                var allProducts = GetIdProductsFromCategory(allCategories[i]);
+
+                for (int b = 0; b < allProducts.Count(); b++)
+                {
+                    if (allProducts[b] == productId)
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        }
+
+        public void SendToDatabaseCart(string? chatId, int productId)
+        {
+            if (productId == -1)
+            {
+                _logger.LogError("SendToDatabase cart: productId==-1");
+                return;
+            }
+
+            if (chatId == null)
+            {
+                _logger.LogError("SendToDatabase cart: chatId==null");
+                return;
+            }
+
+            var cartOBJ = _db.cartObjects;
+
+            var cartproductOBJ = _db.cartproductObjects;
+
+            if (!CartChatIdExist(chatId))
+            {
+                string cartKey = GenerateCartKey();
+
+                CartObject cart = new CartObject()
+                {
+                    ChatId = chatId,
+                    CartKey = cartKey
+                };
+
+                cartOBJ.Add(cart);
+                _db.SaveChanges();
+            }
+            else
+            {
+                _logger.LogInformation("SendToDatabase cart: пользователь уже существует");
+            }
+
+            string cartKeyDB = GetCartKey(chatId);
+
+            if (ProductIdCartExist(productId, cartKeyDB))
+            {
+                _logger.LogError("SendToDatabase cart: такой товар уже есть в корзине!");
+                return;
+            }
+            else if (!ProductIdDBExist(productId))
+            {
+                _logger.LogError("SendToDatabase cart: id продукта не существует!");
+                return;
+            }
+            else
+            {  
+                ProductCartObject cartk = new ProductCartObject()
+                {
+                    Cartkey = cartKeyDB,
+                    ProductId = productId
+                };
+
+                cartproductOBJ.Add(cartk);
+                _db.SaveChanges();
+
+                _logger.LogInformation("SendToDatabase cart: товар успешно добавлен в корзину");
+            }
         }
 
         private void SendToDatabasePhoto(List<KeyValuePair<string, InputMediaType>>? MediaFiles, string? MediaKey)
@@ -453,16 +742,16 @@ namespace FlowerSellerTgBot.Model.DataBase
 
         public void SendToDatabase(FlowerObject flowerObject)
         {
-            if (flowerObject.CategoryName == null) { _logger.LogWarning("SendToDatabase: CategoryName==null"); return; }
+            if (flowerObject.CategoryName == null) { _logger.LogError("SendToDatabase: CategoryName==null"); return; }
 
-            if (flowerObject.ChatId == null) { _logger.LogWarning("SendToDatabase: ChatId==null"); return; }
+            if (flowerObject.ChatId == null) { _logger.LogError("SendToDatabase: ChatId==null"); return; }
 
             if (flowerObject.MediaFiles == null) { 
-                _logger.LogWarning("SendToDatabase: MediaFiles==null"); 
+                _logger.LogError("SendToDatabase: MediaFiles==null"); 
                 return; 
             }
 
-            if (!CategoryDoesExist(flowerObject.CategoryName)) { _logger.LogWarning("SendToDatabase: Category Not Exist!"); return; }
+            if (!CategoryDoesExist(flowerObject.CategoryName)) { _logger.LogError("SendToDatabase: Category Not Exist!"); return; }
 
             CreateNewSeller(flowerObject.ChatId);
 
@@ -489,7 +778,7 @@ namespace FlowerSellerTgBot.Model.DataBase
             }
             else
             {
-                _logger.LogWarning("SendToDatabase: MediaKey==empty");
+                _logger.LogError("SendToDatabase: MediaKey==empty");
             }
         }
 
