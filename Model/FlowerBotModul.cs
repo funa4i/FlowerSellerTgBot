@@ -83,13 +83,13 @@ namespace FlowerSellerTgBot.Model
             if (message.Type == MessageType.Text && message.Text.Equals("/possibilities"))
             {
                 await bot.SendTextMessageAsync(message.Chat.Id, "Я умею собирать понравившиеся товары в корзину," +
-                    " а так же уведомлять об этом продавца");
+                    " а так же связывать вас с продавцом");
                 return;
             }
             if (message.Type == MessageType.Text && message.Text.Equals("/about"))
             {
-                await bot.SendTextMessageAsync(message.Chat.Id, "Я предоставляю каталог цветков, с удобной компановкой\n" +
-                    "Здесь вы можете найти саженцы по душе");
+                await bot.SendTextMessageAsync(message.Chat.Id, "Я предоставляю каталоги цветков, с удобной компановкой\n\n" +
+                    "Здесь вы можете найти саженцы на ваш вкус");
                 return;
             }
             if (message.Type == MessageType.Text)
