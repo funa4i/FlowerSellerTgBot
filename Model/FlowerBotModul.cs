@@ -14,7 +14,6 @@ namespace FlowerSellerTgBot.Model
 {
     public class FlowerBotModul : IModulBot
     {
-
         private readonly IDataBase _dataBase;
 
         private Dictionary<long, MachineState> _personInMachine = new();
@@ -81,7 +80,19 @@ namespace FlowerSellerTgBot.Model
                 await _personInMachine[(message.Chat.Id)].MachineStateDo(bot, message);
                 return;
             }
-            if (message.Type == MessageType.Text) ;
+            if (message.Type == MessageType.Text && message.Text.Equals("/possibilities"))
+            {
+                await bot.SendTextMessageAsync(message.Chat.Id, "Я умею собирать понравившиеся товары в корзину," +
+                    " а так же уведомлять об этом продавца");
+                return;
+            }
+            if (message.Type == MessageType.Text && message.Text.Equals("/about"))
+            {
+                await bot.SendTextMessageAsync(message.Chat.Id, "Я предоставляю каталог цветков, с удобной компановкой\n" +
+                    "Здесь вы можете найти саженцы по душе");
+                return;
+            }
+            if (message.Type == MessageType.Text)
             {
                 switch (message.Text)
                 {
