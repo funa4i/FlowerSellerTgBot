@@ -106,16 +106,25 @@ namespace FlowerSellerTgBot.Model
             }
         }
         // РЕКЕОМЕНДАЦИЯ? Вместо query.Message.Chat.Id, можно использовать query.From.Id
-        public async Task handleCallbackQuery(ITelegramBotClient bot, CallbackQuery query) // TODO: Гриш, добавь "возвращение к категориям"
+        public async Task handleCallbackQuery(ITelegramBotClient bot, CallbackQuery query)
         {
             if (query.Data == null || query.Message == null)
                 return;
             
-            if (query.Data.Equals("requestSeller"))
+            if (query.Data.Equals("requestSeller")) // Выполняем действия на покупку из корзины
             {
                 await bot.DeleteMessageAsync(chatId: query.From.Id, query.Message.MessageId);
                 await CallSellers(bot, query);
                 await ShowCatalog(bot, query.Message);
+                return;
+            }
+            if (query.Data.Equals("returnToCategory")) // Возвращаемся к категориям
+            {
+                await bot.EditMessageTextAsync(query.From.Id, 
+                    query.Message.MessageId,
+                    "Каталог\nКакая категория вас интересует?", 
+                    replyMarkup: CreateCategoryKeyBoard());
+                return;
             }
             //ОБРАБОТКА КНОПКИ КАТЕГОРИИ
             if (_dataBase.GetCategories().Contains(query.Data)) //Если в запросе название категории - выводим продукты этой категории
@@ -145,6 +154,15 @@ namespace FlowerSellerTgBot.Model
                     }
                     ink.Add(arr.ToArray());
                 } //Заморочки с массивами нужны для демонстрации в 2 колонны
+                ink.Add(new InlineKeyboardButton[]
+                {
+                    new InlineKeyboardButton
+                    {
+                        Text = "Вернуться к категориям",
+                        CallbackData = "returnToCategory"
+                    }
+                });
+                
                 var inkm = new InlineKeyboardMarkup(ink);
                 await bot.EditMessageTextAsync(chatId: query.Message.Chat.Id,
                     messageId: query.Message.MessageId,
@@ -312,30 +330,7 @@ namespace FlowerSellerTgBot.Model
         /// </summary>
         private async Task ShowCatalog(ITelegramBotClient bot, Message message)
         {
-            List<InlineKeyboardButton[]> ink = new List<InlineKeyboardButton[]>();
-            var categories = _dataBase.GetCategories();
-            for(int i = 0; i < categories.Count; i += 2)
-                {
-                List<InlineKeyboardButton> arr = new List<InlineKeyboardButton>
-                    {
-                        new InlineKeyboardButton
-                        {
-                            Text = categories[i],
-                            //Строкой ниже я передаю id товара и действие, которое будет сделано
-                            CallbackData = categories[i]
-                        }
-                    };
-                if (i + 1 < categories.Count)
-                {
-                    arr.Add(new InlineKeyboardButton
-                    {
-                        Text = categories[i + 1],
-                        CallbackData = categories[i + 1]
-                    });
-                }
-                ink.Add(arr.ToArray());
-            }
-            InlineKeyboardMarkup inkm = new InlineKeyboardMarkup(ink);
+            InlineKeyboardMarkup inkm = CreateCategoryKeyBoard();
             await bot.SendTextMessageAsync(message.Chat.Id, "Каталог\nКакая категория вас интересует?", replyMarkup: inkm);
         }
         /// <summary>
@@ -491,6 +486,34 @@ namespace FlowerSellerTgBot.Model
                 await bot.SendTextMessageAsync(long.Parse(pair.Key), message);
             }
             _dataBase.DeleteAllCart(query.From.Id.ToString());
+        }
+
+        private InlineKeyboardMarkup CreateCategoryKeyBoard()
+        {
+            List<InlineKeyboardButton[]> ink = new List<InlineKeyboardButton[]>();
+            var categories = _dataBase.GetCategories();
+            for (int i = 0; i < categories.Count; i += 2)
+            {
+                List<InlineKeyboardButton> arr = new List<InlineKeyboardButton>
+                    {
+                        new InlineKeyboardButton
+                        {
+                            Text = categories[i],
+                            //Строкой ниже я передаю id товара и действие, которое будет сделано
+                            CallbackData = categories[i]
+                        }
+                    };
+                if (i + 1 < categories.Count)
+                {
+                    arr.Add(new InlineKeyboardButton
+                    {
+                        Text = categories[i + 1],
+                        CallbackData = categories[i + 1]
+                    });
+                }
+                ink.Add(arr.ToArray());
+            }
+            return new InlineKeyboardMarkup(ink);
         }
     }
 }
