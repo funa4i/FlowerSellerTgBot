@@ -21,8 +21,6 @@ namespace FlowerSellerTgBot.Model
         /// <summary>
         /// Является ли текущий пользователь продавцом
         /// </summary>
-        private bool _isSeller = false; // WARN: Опасно из за много-потока. Может быть конкуренция за чтение
-
         public FlowerBotModul(IDataBase dataBase)
         {
             _dataBase = dataBase;
@@ -70,7 +68,6 @@ namespace FlowerSellerTgBot.Model
         }
         public async Task handleMessage(ITelegramBotClient bot, Message message)
         {
-            _isSeller = UserIsSeller(message.Chat.Id); //Определяем, продавец ли пользователь
             if (message.Type == MessageType.Text && message.Text.Equals("/start"))
             {
                 if (_personInMachine.ContainsKey(message.Chat.Id))
@@ -89,11 +86,11 @@ namespace FlowerSellerTgBot.Model
                 switch (message.Text)
                 {
                     case "Добавить товар":
-                        if (_isSeller)
+                        if (UserIsSeller(message.Chat.Id))
                             StartMachineStateProduct(bot, message);
                         break;
                     case "Добавить категорию":
-                        if (_isSeller)
+                        if (UserIsSeller(message.Chat.Id))
                             StartMachineStateCategory(bot, message);
                         break;
                     case ("Каталог"):
@@ -113,7 +110,6 @@ namespace FlowerSellerTgBot.Model
         {
             if (query.Data == null || query.Message == null)
                 return;
-            _isSeller = UserIsSeller(query.Message.Chat.Id); //Определяем, продавец ли пользователь
             
             if (query.Data.Equals("requestSeller"))
             {
@@ -294,7 +290,7 @@ namespace FlowerSellerTgBot.Model
                     new KeyboardButton("Корзина")
                 };
                 rows.Add(kb);
-                if (_isSeller)
+                if (UserIsSeller(message.Chat.Id))
                 {
                     KeyboardButton[] kb1 = 
                     {
