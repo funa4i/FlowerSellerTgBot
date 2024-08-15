@@ -19,7 +19,7 @@ namespace FlowerSellerTgBot.Model
         /// <summary>
         /// Является ли текущий пользователь продавцом
         /// </summary>
-        private bool _isSeller = false;
+        private bool _isSeller = false; // WARN: Опасно из за много-потока. Может быть конкуренция за чтение
 
         public FlowerBotModul(IDataBase dataBase)
         {
