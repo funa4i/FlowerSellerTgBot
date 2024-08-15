@@ -2,6 +2,7 @@
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using FlowerSellerTgBot.Model;
+using Telegram.Bot.Types.Enums;
 
 namespace FlowerSellerTgBot.Controllers
 {
@@ -23,13 +24,14 @@ namespace FlowerSellerTgBot.Controllers
         [HttpPost]
         public async void Post([FromBody] Update update)
         {
-            long chatId = update.Message.Chat.Id;
-            
-            if (update.Type == Telegram.Bot.Types.Enums.UpdateType.Message)
+            switch (update.Type)
             {
-            //    await _bot.SendTextMessageAsync(chatId, "Echo: " + update.Message.Text);
-            //    _logger.LogInformation(update.Message.Chat.FirstName + " " + update.Message.Chat.LastName + " " + update.Message.Text);
-                await _modulBot.handleMessage(_bot, update.Message);
+                case UpdateType.Message:
+                    await _modulBot.handleMessage(_bot, update.Message);
+                    break;
+                case UpdateType.CallbackQuery:
+                    await _modulBot.handleCallbackQuery(_bot, update.CallbackQuery);
+                    break;
             }
         }
 

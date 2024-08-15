@@ -32,8 +32,22 @@ namespace FlowerSellerTgBot.MachineStates
                 _mes += "\n" + $"{i}." + categories[i - 1];
             }
         }
-
-        // TODO: Сделать выбор категории + изменения количества
+        /// <summary>
+        /// Конструктор для состояния редактирования
+        /// </summary>
+        public MachineStateProduct(long chatId, List<string> categories, FlowerObject flowerObject) : base(chatId)
+        {
+            this.flowerObject = flowerObject;
+            _mediaFiles = flowerObject.MediaFiles;
+            _state = States.RefactorState;
+            _categories = categories;
+            _mes = string.Empty;
+            for (int i = 1; i <= categories.Count; i++)
+            {
+                _mes += "\n" + $"{i}." + categories[i - 1];
+            }
+        }
+        
         override public async Task MachineStateDo(ITelegramBotClient bot, Message message)
         {
             switch (_state)
@@ -238,7 +252,35 @@ namespace FlowerSellerTgBot.MachineStates
                     break;
             }
         }
-
+        /// <summary>
+        /// Метод, отправляющий пользователя на стадию редактирования
+        /// </summary>
+        public async Task DoRefactorState(ITelegramBotClient bot, Message message)
+        {
+            var rpk = new ReplyKeyboardMarkup(new KeyboardButton[]
+            {
+                new KeyboardButton("1"),
+                new KeyboardButton("2"),
+                new KeyboardButton("3"),
+                new KeyboardButton("4"),
+                new KeyboardButton("5"),
+                new KeyboardButton("6"),
+                new KeyboardButton("7")
+            });
+            rpk.ResizeKeyboard = true;
+            await flowerObject.Send(bot, _chatId);
+            await bot.SendTextMessageAsync(_chatId, "Что вы хотите изменить?");
+            await bot.SendTextMessageAsync(_chatId,
+                "1. Выбор категории\n" +
+                "2. Изменить название\n" +
+                "3. Изменить цену\n" +
+                "4. Изменить количество\n" +
+                "5. Изменить описание\n" +
+                "6. Изменить фото/видео\n" +
+                "7. Сохранить товар"
+                , replyMarkup: rpk);
+            _state = States.RefactorState;
+        }
 
     }
 }

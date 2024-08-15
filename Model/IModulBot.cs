@@ -5,14 +5,14 @@ namespace FlowerSellerTgBot.Model
 {
     public interface IModulBot
     {
-        public void startMachineStateProduct(ITelegramBotClient bot, Message message);
-
+  
         /// <summary>
         /// Обработка сообщений типа Message
         /// </summary>
-        /// <param name="bot"></param>
-        /// <param name="message"></param>
-        /// <returns></returns>
         public Task handleMessage(ITelegramBotClient bot, Message message);
+        /// <summary>
+        /// Обработка сообщений типа CallbackQuerry
+        /// </summary>
+        public Task handleCallbackQuery(ITelegramBotClient bot, CallbackQuery query);
     }
 }
