@@ -107,7 +107,7 @@ namespace FlowerSellerTgBot.Model
             }
         }
 
-        public async Task handleCallbackQuery(ITelegramBotClient bot, CallbackQuery query)
+        public async Task handleCallbackQuery(ITelegramBotClient bot, CallbackQuery query) // TODO: Гриш, добавь "возвращение к категориям"
         {
             if (query.Data == null || query.Message == null)
                 return;
