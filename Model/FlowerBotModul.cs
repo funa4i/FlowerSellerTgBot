@@ -170,10 +170,10 @@ namespace FlowerSellerTgBot.Model
                             await CallbackQuerryShow(id, query, bot);
                             break;
                         case "AddCart": //Добавить в корзину
-                            //TODO Тимофей, здесь обрабатывается добавление товара в корзину
+                            _dataBase.SendToDatabaseCart(query.From.Id.ToString(), id);
                             break;
                         case "DelCart": //Убрать из корзины
-                            //TODO Тимофей, здесь обрабатывается удаления товара из корзины
+                            _dataBase.DeleteCart(query.From.Id.ToString(), id);
                             break;
                         case "Refactor": //Редактировать товар
                             StartRefactorMachineStateProduct(bot, query.Message, id);
@@ -386,7 +386,7 @@ namespace FlowerSellerTgBot.Model
             ink.Add(el5);
             var inkm = new InlineKeyboardMarkup(ink);
             await flower.Send(bot, query.Message.Chat.Id);
-            await bot.SendTextMessageAsync(query.Message.Chat.Id, "Каталог", replyMarkup: inkm);
+            await bot.SendTextMessageAsync(query.Message.Chat.Id, "Что будем делать?", replyMarkup: inkm);
         }
     }
 }
