@@ -1,12 +1,14 @@
 ﻿using FlowerSellerTgBot.MachineStates;
 using FlowerSellerTgBot.Model.DataBase;
 using System.Collections;
+using System.IO;
 using System.Reflection.Metadata.Ecma335;
 using Telegram.Bot;
 using Telegram.Bot.Requests;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.ReplyMarkups;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace FlowerSellerTgBot.Model
 {
@@ -27,7 +29,7 @@ namespace FlowerSellerTgBot.Model
         }
         
         // Создание машинного сосотояния, для нового продукта
-        public async void startMachineStateProduct(ITelegramBotClient bot, Message message)
+        private async void StartMachineStateProduct(ITelegramBotClient bot, Message message)
         {
             if (!_personInMachine.ContainsKey(message.Chat.Id))
             {
@@ -35,13 +37,13 @@ namespace FlowerSellerTgBot.Model
 
                 await _personInMachine[message.Chat.Id].MachineStateDo(bot, message);
 
-                _personInMachine[message.Chat.Id].addLifeTimeListener(deleteMashineState);
-                _personInMachine[message.Chat.Id].addActionStateDoneListener(saveMachineStateProduct);
+                _personInMachine[message.Chat.Id].addLifeTimeListener(DeleteMashineState);
+                _personInMachine[message.Chat.Id].addActionStateDoneListener(SaveMachineStateProduct);
             }
         }
 
         // Создание машинного состояния, для новой категории
-        public async void startMachineStateCategory(ITelegramBotClient bot, Message message)
+        private async void StartMachineStateCategory(ITelegramBotClient bot, Message message)
         {
             if (!_personInMachine.ContainsKey(message.Chat.Id))
             {
@@ -49,8 +51,8 @@ namespace FlowerSellerTgBot.Model
 
                 await _personInMachine[message.Chat.Id].MachineStateDo(bot, message);
 
-                _personInMachine[(message.Chat.Id)].addLifeTimeListener(deleteMashineState);
-                _personInMachine[message.Chat.Id].addActionStateDoneListener(saveMachineStateCategory);
+                _personInMachine[(message.Chat.Id)].addLifeTimeListener(DeleteMashineState);
+                _personInMachine[message.Chat.Id].addActionStateDoneListener(SaveMachineStateCategory);
             }
         }
         // Создание машинного состояния для редактирования (с соответствующего этапа)
@@ -63,7 +65,7 @@ namespace FlowerSellerTgBot.Model
             
             _personInMachine.Add(message.Chat.Id, state);
             await state.DoRefactorState(bot, message);
-            _personInMachine[(message.Chat.Id)].addLifeTimeListener(deleteMashineState);
+            _personInMachine[(message.Chat.Id)].addLifeTimeListener(DeleteMashineState);
             _personInMachine[message.Chat.Id].addActionStateDoneListener(SaveMachineStateProductChanges);
         }
         public async Task handleMessage(ITelegramBotClient bot, Message message)
@@ -72,7 +74,7 @@ namespace FlowerSellerTgBot.Model
             if (message.Type == MessageType.Text && message.Text.Equals("/start"))
             {
                 if (_personInMachine.ContainsKey(message.Chat.Id))
-                    deleteMashineState(_personInMachine[message.Chat.Id]); //Пользователь нажал start -> удаляем предыдущее MachineState
+                    DeleteMashineState(_personInMachine[message.Chat.Id]); //Пользователь нажал start -> удаляем предыдущее MachineState
                 //Сделано это для того, чтобы в случае подвисания/ошибки бота можно было вернуться в начало (Проверено на личном опыте)
                 await MakeStartReplyKeyboard(message, bot);
                 return;
@@ -88,17 +90,17 @@ namespace FlowerSellerTgBot.Model
                 {
                     case "Добавить товар":
                         if (_isSeller)
-                            startMachineStateProduct(bot, message);
+                            StartMachineStateProduct(bot, message);
                         break;
                     case "Добавить категорию":
                         if (_isSeller)
-                            startMachineStateCategory(bot, message);
+                            StartMachineStateCategory(bot, message);
                         break;
                     case ("Каталог"):
                         await ShowCatalog(bot, message);
                         break;
                     case ("Корзина"):
-                        //TODO Тимофей, тут надо сделать открытие самой корзины
+                        await ShowUserCart(bot, message); //TODO Тимофей, тут надо сделать открытие самой корзины
                         break;
                     default:
                         await bot.SendTextMessageAsync(message.Chat.Id, $"Эхо: {message.Text}");
@@ -106,12 +108,19 @@ namespace FlowerSellerTgBot.Model
                 }
             }
         }
-
+        // РЕКЕОМЕНДАЦИЯ? Вместо query.Message.Chat.Id, можно использовать query.From.Id
         public async Task handleCallbackQuery(ITelegramBotClient bot, CallbackQuery query) // TODO: Гриш, добавь "возвращение к категориям"
         {
             if (query.Data == null || query.Message == null)
                 return;
             _isSeller = UserIsSeller(query.Message.Chat.Id); //Определяем, продавец ли пользователь
+            
+            if (query.Data.Equals("requestSeller"))
+            {
+                await bot.DeleteMessageAsync(chatId: query.From.Id, query.Message.MessageId);
+                await CallSellers(bot, query);
+                await ShowCatalog(bot, query.Message);
+            }
             //ОБРАБОТКА КНОПКИ КАТЕГОРИИ
             if (_dataBase.GetCategories().Contains(query.Data)) //Если в запросе название категории - выводим продукты этой категории
             {
@@ -152,16 +161,7 @@ namespace FlowerSellerTgBot.Model
             if ((id, action) != (-1, string.Empty)) //Если все нормально отпарсилось, то делаем
             {
                 //Проверка, есть ли объект с таким ID в бд 
-                bool containFlag = false;
-                foreach (string category in _dataBase.GetCategories())
-                {
-                    if (_dataBase.GetIdProductsFromCategory(category).Contains(id))
-                    {
-                        containFlag = true;
-                        break;
-                    }
-                }
-                if (containFlag) //Если такой товар есть - выполняем action
+                if (_dataBase.GetFlowerObjectFromId(id).ProductId != -1) //Если такой товар есть - выполняем action
                 {
                     //Здесь я вывел все действия в отдельные функции для чистоты
                     switch (action)
@@ -171,9 +171,15 @@ namespace FlowerSellerTgBot.Model
                             break;
                         case "AddCart": //Добавить в корзину
                             _dataBase.SendToDatabaseCart(query.From.Id.ToString(), id);
+                            await bot.SendTextMessageAsync(query.From.Id, "Товар добавлен в корзину");
+                            await bot.DeleteMessageAsync(chatId: query.Message.Chat.Id, query.Message.MessageId);
+                            await ShowCatalog(bot,query.Message);
                             break;
                         case "DelCart": //Убрать из корзины
                             _dataBase.DeleteCart(query.From.Id.ToString(), id);
+                            await bot.SendTextMessageAsync(query.From.Id, "Товар удален из корзины");
+                            await bot.DeleteMessageAsync(chatId: query.Message.Chat.Id, query.Message.MessageId);
+                            await ShowUserCart(bot, query.Message);
                             break;
                         case "Refactor": //Редактировать товар
                             StartRefactorMachineStateProduct(bot, query.Message, id);
@@ -216,7 +222,7 @@ namespace FlowerSellerTgBot.Model
             
         }
 
-        private void deleteMashineState(MachineState state)
+        private void DeleteMashineState(MachineState state)
         {
             lock (_personInMachine)
             {
@@ -237,7 +243,7 @@ namespace FlowerSellerTgBot.Model
             }
         }
 
-        private void saveMachineStateProduct(MachineState state)
+        private void SaveMachineStateProduct(MachineState state)
         {
             if (state is MachineStateProduct s)
             {
@@ -245,7 +251,7 @@ namespace FlowerSellerTgBot.Model
             }
         }
 
-        private void saveMachineStateCategory(MachineState state)
+        private void SaveMachineStateCategory(MachineState state)
         {
             if (state is MachineStateCategory s)
             {
@@ -258,14 +264,19 @@ namespace FlowerSellerTgBot.Model
         /// <returns>если да - true, иначе - false</returns>
         private bool UserIsSeller(ChatId chatId)
         {
-            using StreamReader reader = new StreamReader("Sellers.txt");
-            string? line;
-            while ((line = reader.ReadLine()) != null)
+            using (StreamReader reader = new StreamReader("Sellers.txt"))
             {
-                if (line.Equals(chatId.ToString()))
-                    return true;
+                string? line;
+                while ((line = reader.ReadLine()) != null)
+                {
+                    if (line.Equals(chatId.ToString()))
+                    {
+                        reader.Close();
+                        return true;
+                    }
+                }
+                reader.Close();
             }
-            reader.Dispose();
             return false;
         }
         /// <summary>
@@ -296,6 +307,7 @@ namespace FlowerSellerTgBot.Model
                 {
                     ResizeKeyboard = true
                 };
+                rpk.ResizeKeyboard = true;
                 await bot.SendTextMessageAsync(message.Chat.Id, string.IsNullOrEmpty(mes.Trim()) ? "Привет! Это бот-магазин цветов, как я могу вам помочь?" : mes, replyMarkup: rpk);
             }
         }
@@ -304,14 +316,28 @@ namespace FlowerSellerTgBot.Model
         /// </summary>
         private async Task ShowCatalog(ITelegramBotClient bot, Message message)
         {
-            List<InlineKeyboardButton> ink = new List<InlineKeyboardButton>();
-            foreach (var category in _dataBase.GetCategories())
-            {
-                ink.Add(new InlineKeyboardButton
+            List<InlineKeyboardButton[]> ink = new List<InlineKeyboardButton[]>();
+            var categories = _dataBase.GetCategories();
+            for(int i = 0; i < categories.Count; i += 2)
                 {
-                    Text = category,
-                    CallbackData = category
-                });
+                List<InlineKeyboardButton> arr = new List<InlineKeyboardButton>
+                    {
+                        new InlineKeyboardButton
+                        {
+                            Text = categories[i],
+                            //Строкой ниже я передаю id товара и действие, которое будет сделано
+                            CallbackData = categories[i]
+                        }
+                    };
+                if (i + 1 < categories.Count)
+                {
+                    arr.Add(new InlineKeyboardButton
+                    {
+                        Text = categories[i + 1],
+                        CallbackData = categories[i + 1]
+                    });
+                }
+                ink.Add(arr.ToArray());
             }
             InlineKeyboardMarkup inkm = new InlineKeyboardMarkup(ink);
             await bot.SendTextMessageAsync(message.Chat.Id, "Каталог\nКакая категория вас интересует?", replyMarkup: inkm);
@@ -357,7 +383,7 @@ namespace FlowerSellerTgBot.Model
             };
             ink.Add(el1);
             ink.Add(el2);
-            if (_isSeller)
+            if (long.Parse(flower.ChatId) == query.From.Id)
             {
                 var el3 = new[]
                 { new InlineKeyboardButton
@@ -387,6 +413,88 @@ namespace FlowerSellerTgBot.Model
             var inkm = new InlineKeyboardMarkup(ink);
             await flower.Send(bot, query.Message.Chat.Id);
             await bot.SendTextMessageAsync(query.Message.Chat.Id, "Что будем делать?", replyMarkup: inkm);
+        }
+    
+    
+        private async Task ShowUserCart(ITelegramBotClient bot, Message message)
+        {
+            var ids = _dataBase.GetIdProductsFromCart(message.Chat.Id.ToString());
+
+            List<InlineKeyboardButton[]> ink = new List<InlineKeyboardButton[]>();
+            for (int i = 0; i < ids.Count; i += 2)
+            {
+                var flower = _dataBase.GetFlowerObjectFromId(ids[i]);
+                List<InlineKeyboardButton> arr = new List<InlineKeyboardButton>
+                    {
+                        new InlineKeyboardButton
+                        {
+                            Text = flower.ProductName ?? string.Empty,
+                            //Строкой ниже я передаю id товара и действие, которое будет сделано
+                            CallbackData = flower.ProductId + "|" + "Show"
+                        }
+                    };
+                if (i + 1 < ids.Count)
+                {
+                    flower = _dataBase.GetFlowerObjectFromId(ids[i + 1]);
+                    arr.Add(new InlineKeyboardButton
+                    {
+                        Text = flower.ProductName ?? string.Empty,
+                        CallbackData = flower.ProductId + "|" + "Show"
+                    });
+                }
+                ink.Add(arr.ToArray());
+            }
+            InlineKeyboardMarkup inkm = new InlineKeyboardMarkup(ink);
+            await bot.SendTextMessageAsync(chatId: message.Chat.Id,
+                   text: $"Ваша корзина",
+                   replyMarkup: inkm);
+            await bot.SendTextMessageAsync(chatId: message.Chat.Id,
+                text: "Отправить заявку?",
+                replyMarkup: new InlineKeyboardMarkup(new InlineKeyboardButton
+                {
+                    Text = "Отправить заявку на товары",
+                    CallbackData = "requestSeller"
+                }
+                ));
+            return;
+        }
+
+
+        private async Task CallSellers(ITelegramBotClient bot, CallbackQuery query)
+        {
+            var ids = _dataBase.GetIdProductsFromCart(query.From.Id.ToString());
+            if (ids.Count == 0)
+            {
+                await bot.SendTextMessageAsync(query.From.Id, "Корзина пуста");
+                return;
+            }
+            await bot.SendTextMessageAsync(query.From.Id, "Заявка отправлена.\n" +
+                "Продавец свяжется с вами как сможет\n" +
+                "Удостовертесь что вам можно написать :)");
+            Dictionary<string, List<string>> valuePairs = new Dictionary<string, List<string>>();
+            for (int i = 0; i < ids.Count; i++)
+            {
+                var obj = _dataBase.GetFlowerObjectFromId(ids[i]);
+                if (!string.IsNullOrEmpty(obj.ProductName)) 
+                {
+                    if (!valuePairs.ContainsKey(obj.ChatId))
+                    {
+                        valuePairs[obj.ChatId] = new List<string>();
+                    }
+                    valuePairs[obj.ChatId].Add("Категория: " + obj.CategoryName + "\n" + "Товар: " + obj.ProductName);
+                }
+            }
+
+            foreach (var pair in valuePairs)
+            {
+                string message = $"Пользователь @{query.From.Username}, отправил заявку на данные товары\n";
+                foreach (var item in pair.Value)
+                {
+                    message += "\n" + item  + "\n";
+                }
+                await bot.SendTextMessageAsync(long.Parse(pair.Key), message);
+            }
+            _dataBase.DeleteAllCart(query.From.Id.ToString());
         }
     }
 }
