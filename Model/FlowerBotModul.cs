@@ -208,7 +208,7 @@ namespace FlowerSellerTgBot.Model
                                 },
                                 new InlineKeyboardButton
                                 {
-                                    Text = "Нет, вернутся к товарам категории",
+                                    Text = "Нет",
                                     CallbackData = _dataBase.GetFlowerObjectFromId(id).CategoryName
                                 }
                             };
