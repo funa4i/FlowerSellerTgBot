@@ -5,8 +5,7 @@ namespace FlowerSellerTgBot.Model
 {
     public interface IModulBot
     {
-        public void startMachineStateProduct(ITelegramBotClient bot, Message message);
-
+  
         /// <summary>
         /// Обработка сообщений типа Message
         /// </summary>
