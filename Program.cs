@@ -14,8 +14,8 @@ namespace FlowerSellerTgBot
             
             
             var token = builder.Configuration["Telegram:Token"] ?? throw new InvalidOperationException("Token is null");
-            
-            
+
+
             builder.Services.AddHttpClient<ITelegramBotClient, TelegramBotClient>((client, _) => new TelegramBotClient(token, client));
 
             //реализация db
@@ -31,10 +31,10 @@ namespace FlowerSellerTgBot
             builder.Services.AddControllers();
 
             builder.Services.ConfigureTelegramBotMvc();
-            
+
             builder.Services.ConfigureTelegramBot<Microsoft.AspNetCore.Http.Json.JsonOptions>(opt => opt.SerializerOptions);
 
-  
+
 
 
             var app = builder.Build();
