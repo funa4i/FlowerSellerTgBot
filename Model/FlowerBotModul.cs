@@ -103,7 +103,7 @@ namespace FlowerSellerTgBot.Model
                         if (UserIsSeller(message.Chat.Id))
                             StartMachineStateCategory(bot, message);
                         break;
-                    case ("Каталог"):
+                    case ("Все события"):
                         await ShowCatalog(bot, message);
                         break;
                     //case ("Корзина"):
@@ -367,35 +367,35 @@ namespace FlowerSellerTgBot.Model
             FlowerObject flower = _dataBase.GetFlowerObjectFromId(id);
             List<InlineKeyboardButton[]> ink = new List<InlineKeyboardButton[]>();
             //Ниже каждую кнопку я оборачиваю в массив, чтобы они выводились по одной (в 2 не помещаются)
-            var el1 = new []
-            { new InlineKeyboardButton
-                {
-                    Text = "Добавить в корзину",
-                    CallbackData = flower.ProductId + "|" + "AddCart"
-                }
-            };
-            var el2 = new[]
-            { new InlineKeyboardButton
-                {
-                    Text = "Убрать из корзины",
-                    CallbackData = flower.ProductId + "|" + "DelCart"
-                }
-            };
-            ink.Add(el1);
-            ink.Add(el2);
+            //var el1 = new []
+            //{ new InlineKeyboardButton
+            //    {
+            //        Text = "Добавить в корзину",
+            //        CallbackData = flower.ProductId + "|" + "AddCart"
+            //    }
+            //};
+            //var el2 = new[]
+            //{ new InlineKeyboardButton
+            //    {
+            //        Text = "Убрать из корзины",
+            //        CallbackData = flower.ProductId + "|" + "DelCart"
+            //    }
+            //};
+            //ink.Add(el1);
+            //ink.Add(el2);
             if (long.Parse(flower.ChatId) == query.From.Id)
             {
                 var el3 = new[]
                 { new InlineKeyboardButton
                     {
-                        Text = "Редактировать товар",
+                        Text = "Редактировать",
                         CallbackData = flower.ProductId + "|" + "Refactor"
                     }
                 };
                 var el4 = new[]
                 { new InlineKeyboardButton
                     {
-                        Text = "Удалить товар",
+                        Text = "Удалить",
                         CallbackData = flower.ProductId + "|" + "PreDel"
                     } 
                 };
@@ -405,7 +405,7 @@ namespace FlowerSellerTgBot.Model
             var el5 = new[]
             { new InlineKeyboardButton
                 {
-                    Text = "К товарам категории",
+                    Text = "К событиям",
                     CallbackData = flower.CategoryName
                 } 
             };
