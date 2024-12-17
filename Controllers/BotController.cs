@@ -18,6 +18,8 @@ namespace FlowerSellerTgBot.Controllers
             _logger = logger;
             _bot = bot;
             _modulBot = modul;
+            bot.GetUpdates();
+            bot.SetWebhook("https://9bc3-176-116-141-50.ngrok-free.app");
         }
         
 

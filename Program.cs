@@ -25,9 +25,9 @@ namespace FlowerSellerTgBot
 
             builder.Services.AddDbContext<DataContext>(options =>
             {
-                options.UseNpgsql(builder.Configuration.GetConnectionString("ServerConn"));
+                    options.UseNpgsql(builder.Configuration.GetConnectionString("Server=127.0.0.1;Database=Bot;Port=5432;User Id=root;Password=password;"));   
             });
-
+            
             builder.Services.AddControllers();
 
             builder.Services.ConfigureTelegramBotMvc();
@@ -38,6 +38,14 @@ namespace FlowerSellerTgBot
 
 
             var app = builder.Build();
+
+            //using (var scope = app.Services.CreateScope())
+            //{
+            //    var serv = scope.ServiceProvider;
+            //    var cont = serv.GetRequiredService<DataContext>();
+            //    Console.WriteLine(cont.Database.CanConnect());
+            //    cont.Database.Migrate();
+            //}
 
             app.UseHttpsRedirection();
 

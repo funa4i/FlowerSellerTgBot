@@ -17,9 +17,7 @@ namespace FlowerSellerTgBot.Model.DataBase
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            if (!optionsBuilder.IsConfigured)
-                optionsBuilder.UseNpgsql("Server=95.163.221.233;Database=simbir_practice_db;Port=5432;User Id=simbir_practice_user;Password=simbirpass;");
-
+            optionsBuilder.UseNpgsql("Server=127.0.0.1;Database=Bot;Port=5432;User Id=root;Password=password;");
         }
     }
 }

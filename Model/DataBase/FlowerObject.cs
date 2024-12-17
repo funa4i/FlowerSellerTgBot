@@ -57,11 +57,11 @@ public class FlowerObject
     /**
      * Цена товара (цветка)
      */
-    public string? Price;
+    public string? Price = "";
     /**
      * Количество товара
      */
-    public int Amount;
+    public int Amount = 0;
     
     /// <summary>
     /// Конструктор объекта-цветка
@@ -126,7 +126,7 @@ public class FlowerObject
             else if (keyValuePair.Value == InputMediaType.Video)
                 inputMedia.Add(new InputMediaVideo(keyValuePair.Key));
         }
-        ((InputMedia)inputMedia[0]).Caption = $"Название: {ProductName}\n" + $"Цена: {Price} руб.\n" + $"Категория: {CategoryName}\n" + $"Количество: {Amount} шт.\n" + $"\n{Description}";
+        ((InputMedia)inputMedia[0]).Caption = $"Название: {ProductName}\n" + $"Событие: {CategoryName}\n" + $"Количество: {Amount} шт.\n" + $"\n{Description}";
         await bot.SendMediaGroupAsync(id, inputMedia);
     }
 }

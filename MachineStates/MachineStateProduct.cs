@@ -53,29 +53,29 @@ namespace FlowerSellerTgBot.MachineStates
             switch (_state)
             {
                 case States.None:
-                    await bot.SendTextMessageAsync(_chatId, "Введите номер категории" + _mes, replyMarkup: new ReplyKeyboardRemove());
+                    await bot.SendTextMessageAsync(_chatId, "Введите номер события" + _mes, replyMarkup: new ReplyKeyboardRemove());
                     _state = States.Category;
                     break;
                 case States.Category:
                     int categoryId = -1;
                     if (message.Text == "Оставить прежнее" && !string.IsNullOrEmpty(flowerObject.CategoryName))
                     {
-                        await bot.SendTextMessageAsync(_chatId, "Введите название товара");
+                        await bot.SendTextMessageAsync(_chatId, "Введите название растения");
                         _state = States.Name;
                         break;
                     }
                     if (message.Type != MessageType.Text || !int.TryParse(message.Text, out categoryId))
                     {
-                        await bot.SendTextMessageAsync(_chatId, "Пожалуйста, введите номер категории");
+                        await bot.SendTextMessageAsync(_chatId, "Пожалуйста, введите номер события");
                     }
                     if (categoryId > _categories.Count || categoryId < 1)
                     {
-                        await bot.SendTextMessageAsync(_chatId, "Такой категории нет, введите номер категории из списка");
+                        await bot.SendTextMessageAsync(_chatId, "Такого события нет, введите номер события из списка");
                     }
                     else
                     {
                         flowerObject.CategoryName = _categories[categoryId - 1];
-                        await bot.SendTextMessageAsync(_chatId, "Введите название товара");
+                        await bot.SendTextMessageAsync(_chatId, "Введите название растения");
                         _state = States.Name;
                     }
                     break;
@@ -85,7 +85,7 @@ namespace FlowerSellerTgBot.MachineStates
                 case States.Name:
                     if (string.IsNullOrEmpty(message.Text))
                     {
-                        await bot.SendTextMessageAsync(_chatId, "Извините, я вас не понял. Пожалуйста, введите название товара");
+                        await bot.SendTextMessageAsync(_chatId, "Извините, я вас не понял. Пожалуйста, введите название растения");
                         break;
                     }
                     if (!message.Text.Equals("Оставить прежнее") || string.IsNullOrEmpty(flowerObject.ProductName))
@@ -93,8 +93,9 @@ namespace FlowerSellerTgBot.MachineStates
                         flowerObject.ProductName = message.Text;
                         
                     }
-                    _state = States.Price;
-                    await bot.SendTextMessageAsync(_chatId, "Какая цена будет у товара?");
+                    // name -> amount
+                    _state = States.Amount;
+                    await bot.SendTextMessageAsync(_chatId, "Введите количество");
                     break;
                 case States.Price:
                     if (string.IsNullOrEmpty(message.Text))
@@ -112,7 +113,7 @@ namespace FlowerSellerTgBot.MachineStates
                 case States.Amount:
                     if (message.Type != MessageType.Text)
                     {
-                        await bot.SendTextMessageAsync(_chatId, "Извините, я вас не понял. Пожалуйста, введите количество товара");
+                        await bot.SendTextMessageAsync(_chatId, "Извините, я вас не понял. Пожалуйста, введите количество");
                         break;
                     }
                     if (!message.Text.Equals("Оставить прежнее"))
@@ -121,17 +122,17 @@ namespace FlowerSellerTgBot.MachineStates
                             flowerObject.Amount = result;
                         else
                         {
-                            await bot.SendTextMessageAsync(_chatId, "Извините, я вас не понял. Пожалуйста, введите количество товара числом");
+                            await bot.SendTextMessageAsync(_chatId, "Извините, я вас не понял. Пожалуйста, введите количество числом");
                             break;
                         }
                     }
                     _state = States.Desription;
-                    await bot.SendTextMessageAsync(_chatId, "Опишите товар");
+                    await bot.SendTextMessageAsync(_chatId, "Опишите растение");
                     break;
                 case States.Desription:
                     if (string.IsNullOrEmpty(message.Text))
                     {
-                        await bot.SendTextMessageAsync(_chatId, "Извините, я вас не понял. Пришлите текстовое описание товара");
+                        await bot.SendTextMessageAsync(_chatId, "Извините, я вас не понял. Пришлите текстовое описание");
                         break;
                     }
                     if (!message.Text.Equals("Оставить прежнее") || string.IsNullOrEmpty(flowerObject.Description))
@@ -167,13 +168,12 @@ namespace FlowerSellerTgBot.MachineStates
                         await bot.SendTextMessageAsync(_chatId, "Отлично, проверьте, все ли верно?");
                         await flowerObject.Send(bot, _chatId);
                         await bot.SendTextMessageAsync(_chatId,
-                            "1. Выбор категории\n" +
+                            "1. Выбор события\n" +
                             "2. Изменить название\n" +
-                            "3. Изменить цену\n" +
                             "4. Изменить количество\n" +
                             "5. Изменить описание\n" +
                             "6. Изменить фото/видео\n" +
-                            "7. Сохранить товар"
+                            "7. Сохранить"
                             , replyMarkup: rpk);
                         _state = States.RefactorState;
                         break;
@@ -209,23 +209,23 @@ namespace FlowerSellerTgBot.MachineStates
                     switch (message.Text)
                     {
                         case "1":
-                            await bot.SendTextMessageAsync(_chatId, "Введите номер категории" + _mes, replyMarkup: rpkRefactor);
+                            await bot.SendTextMessageAsync(_chatId, "Введите номер события" + _mes, replyMarkup: rpkRefactor);
                             _state = States.Category;
                             break;
                         case "2":
-                            await bot.SendTextMessageAsync(_chatId, "Введите название товара", replyMarkup: rpkRefactor);
+                            await bot.SendTextMessageAsync(_chatId, "Введите название", replyMarkup: rpkRefactor);
                             _state = States.Name;
                             break;
-                        case "3":
-                            await bot.SendTextMessageAsync(_chatId, "Какая цена будет у товара?", replyMarkup: rpkRefactor);
-                            _state = States.Price;
-                            break;
+                        //case "3":
+                        //    await bot.SendTextMessageAsync(_chatId, "Какая цена будет у товара?", replyMarkup: rpkRefactor);
+                        //    _state = States.Price;
+                        //    break;
                         case "4":
-                            await bot.SendTextMessageAsync(_chatId, "Введите количество товара в наличии", replyMarkup: rpkRefactor);
+                            await bot.SendTextMessageAsync(_chatId, "Введите количество", replyMarkup: rpkRefactor);
                             _state = States.Amount;
                             break;
                         case "5":
-                            await bot.SendTextMessageAsync(_chatId, "Опишите товар", replyMarkup: rpkRefactor);
+                            await bot.SendTextMessageAsync(_chatId, "Опишите растение", replyMarkup: rpkRefactor);
                             _state = States.Desription;
                             break;
                         case "6":
@@ -271,9 +271,8 @@ namespace FlowerSellerTgBot.MachineStates
             await flowerObject.Send(bot, _chatId);
             await bot.SendTextMessageAsync(_chatId, "Что вы хотите изменить?");
             await bot.SendTextMessageAsync(_chatId,
-                "1. Выбор категории\n" +
+                "1. Выбор события\n" +
                 "2. Изменить название\n" +
-                "3. Изменить цену\n" +
                 "4. Изменить количество\n" +
                 "5. Изменить описание\n" +
                 "6. Изменить фото/видео\n" +

@@ -96,20 +96,19 @@ namespace FlowerSellerTgBot.Model
             {
                 switch (message.Text)
                 {
-                    case "Добавить товар":
-                        if (UserIsSeller(message.Chat.Id))
-                            StartMachineStateProduct(bot, message);
+                    case "Добавить растение":
+                        StartMachineStateProduct(bot, message);
                         break;
-                    case "Добавить категорию":
+                    case "Добавить событие":
                         if (UserIsSeller(message.Chat.Id))
                             StartMachineStateCategory(bot, message);
                         break;
                     case ("Каталог"):
                         await ShowCatalog(bot, message);
                         break;
-                    case ("Корзина"):
-                        await ShowUserCart(bot, message); //TODO Тимофей, тут надо сделать открытие самой корзины
-                        break;
+                    //case ("Корзина"):
+                    //    await ShowUserCart(bot, message); //TODO Тимофей, тут надо сделать открытие самой корзины
+                    //    break;
                     default:
                         await bot.SendTextMessageAsync(message.Chat.Id, $"Эхо: {message.Text}");
                         break;
@@ -315,16 +314,15 @@ namespace FlowerSellerTgBot.Model
                 List<KeyboardButton[]> rows = new List<KeyboardButton[]>(); //Колонны. Сделаны для красивого вывода  
                 KeyboardButton[] kb = new []
                 {
-                    new KeyboardButton("Каталог"),
-                    new KeyboardButton("Корзина")
+                    new KeyboardButton("Все события"),
                 };
                 rows.Add(kb);
                 if (UserIsSeller(message.Chat.Id))
                 {
                     KeyboardButton[] kb1 = 
                     {
-                        new KeyboardButton("Добавить товар"),
-                        new KeyboardButton("Добавить категорию")
+                        new KeyboardButton("Добавить растение"),
+                        new KeyboardButton("Добавить событие")
                     };
                     rows.Add(kb1);
                 }
