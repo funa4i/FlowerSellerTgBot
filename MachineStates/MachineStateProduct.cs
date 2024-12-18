@@ -153,29 +153,7 @@ namespace FlowerSellerTgBot.MachineStates
                             flowerObject.MediaFiles = _mediaFiles;
                             _mediaFiles.Clear();
                         }
-                        var rpk = new ReplyKeyboardMarkup(new KeyboardButton[]
-                        {
-                            new KeyboardButton("1"),
-                            new KeyboardButton("2"),
-                            new KeyboardButton("3"),
-                            new KeyboardButton("4"),
-                            new KeyboardButton("5"),
-                            new KeyboardButton("6"),
-                            new KeyboardButton("7")
-                        });
-                        rpk.ResizeKeyboard = true;
-
-                        await bot.SendTextMessageAsync(_chatId, "Отлично, проверьте, все ли верно?");
-                        await flowerObject.Send(bot, _chatId);
-                        await bot.SendTextMessageAsync(_chatId,
-                            "1. Выбор события\n" +
-                            "2. Изменить название\n" +
-                            "4. Изменить количество\n" +
-                            "5. Изменить описание\n" +
-                            "6. Изменить фото/видео\n" +
-                            "7. Сохранить"
-                            , replyMarkup: rpk);
-                        _state = States.RefactorState;
+                        await DoRefactorState(bot, message);
                         break;
                     }
                     if (message.Photo == null && message.Video == null)
@@ -276,7 +254,7 @@ namespace FlowerSellerTgBot.MachineStates
                 "4. Изменить количество\n" +
                 "5. Изменить описание\n" +
                 "6. Изменить фото/видео\n" +
-                "7. Сохранить товар"
+                "7. Сохранить"
                 , replyMarkup: rpk);
             _state = States.RefactorState;
         }

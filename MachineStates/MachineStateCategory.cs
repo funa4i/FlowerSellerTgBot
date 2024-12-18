@@ -22,19 +22,19 @@ namespace FlowerSellerTgBot.MachineStates
             switch (state)
             {
                 case States.None:
-                    await bot.SendTextMessageAsync(_chatId, "Введите название категории", replyMarkup: new ReplyKeyboardRemove());
+                    await bot.SendTextMessageAsync(_chatId, "Введите название события", replyMarkup: new ReplyKeyboardRemove());
                     state = States.Name;
                     break;
                 case States.Name:
                     if (string.IsNullOrEmpty(message.Text))
                     {
-                        await bot.SendTextMessageAsync(_chatId, "Извините, я вас не понял. Пожалуйста, введите название категории", replyMarkup: new ReplyKeyboardRemove());
+                        await bot.SendTextMessageAsync(_chatId, "Извините, я вас не понял. Пожалуйста, введите название события", replyMarkup: new ReplyKeyboardRemove());
                         break;
                     }
                     Name = message.Text;
                     state = States.RefactorState;
-                    await bot.SendTextMessageAsync(_chatId, 
-                        "Название новой категории будет:\n"
+                    await bot.SendTextMessageAsync(_chatId,
+                        "Названием нового события будет:\n"
                         + Name + "\n" +
                         "Все верно?", 
                         replyMarkup: new ReplyKeyboardMarkup(

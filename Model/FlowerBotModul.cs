@@ -82,21 +82,21 @@ namespace FlowerSellerTgBot.Model
             }
             if (message.Type == MessageType.Text && message.Text.Equals("/possibilities"))
             {
-                await bot.SendTextMessageAsync(message.Chat.Id, "Я умею собирать понравившиеся товары в корзину," +
-                    " а так же связывать вас с продавцом");
+                await bot.SendTextMessageAsync(message.Chat.Id, "Я умею собирать заявки для посадки растений," +
+                    " а так же представляю перечень доступных событий");
                 return;
             }
             if (message.Type == MessageType.Text && message.Text.Equals("/about"))
             {
-                await bot.SendTextMessageAsync(message.Chat.Id, "Я предоставляю каталоги цветков, с удобной компановкой\n\n" +
-                    "Здесь вы можете найти саженцы на ваш вкус");
+                await bot.SendTextMessageAsync(message.Chat.Id, "Я предоставляю перечень событий с удобной компановкой\n\n" +
+                    "Здесь вы можете подать заявку на событие");
                 return;
             }
             if (message.Type == MessageType.Text)
             {
                 switch (message.Text)
                 {
-                    case "Добавить растение":
+                    case "Добавить заявку":
                         StartMachineStateProduct(bot, message);
                         break;
                     case "Добавить событие":
@@ -132,7 +132,7 @@ namespace FlowerSellerTgBot.Model
             {
                 await bot.EditMessageTextAsync(query.From.Id, 
                     query.Message.MessageId,
-                    "Каталог\nКакая категория вас интересует?", 
+                    "Перечень доступных событий\nКакое событие вас интересует?", 
                     replyMarkup: CreateCategoryKeyBoard());
                 return;
             }
@@ -168,7 +168,7 @@ namespace FlowerSellerTgBot.Model
                 {
                     new InlineKeyboardButton
                     {
-                        Text = "Вернуться к категориям",
+                        Text = "Вернуться к перечню событий",
                         CallbackData = "returnToCategory"
                     }
                 });
@@ -176,7 +176,7 @@ namespace FlowerSellerTgBot.Model
                 var inkm = new InlineKeyboardMarkup(ink);
                 await bot.EditMessageTextAsync(chatId: query.Message.Chat.Id,
                     messageId: query.Message.MessageId,
-                    text: $"Каталог\nТовары категории '{query.Data}'",
+                    text: $"События\nЗаявки по событию'{query.Data}'",
                     replyMarkup: inkm);
                 return;
             }
@@ -317,11 +317,11 @@ namespace FlowerSellerTgBot.Model
                     new KeyboardButton("Все события"),
                 };
                 rows.Add(kb);
+                rows.Add([new KeyboardButton("Добавить заявку")]);
                 if (UserIsSeller(message.Chat.Id))
                 {
                     KeyboardButton[] kb1 = 
                     {
-                        new KeyboardButton("Добавить растение"),
                         new KeyboardButton("Добавить событие")
                     };
                     rows.Add(kb1);
@@ -331,7 +331,7 @@ namespace FlowerSellerTgBot.Model
                     ResizeKeyboard = true
                 };
                 rpk.ResizeKeyboard = true;
-                await bot.SendTextMessageAsync(message.Chat.Id, string.IsNullOrEmpty(mes.Trim()) ? "Привет! Это бот-магазин цветов, как я могу вам помочь?" : mes, replyMarkup: rpk);
+                await bot.SendTextMessageAsync(message.Chat.Id, string.IsNullOrEmpty(mes.Trim()) ? "Привет! Это бот-событий для растений, как я могу вам помочь?" : mes, replyMarkup: rpk);
             }
         }
         /// <summary>
@@ -340,7 +340,7 @@ namespace FlowerSellerTgBot.Model
         private async Task ShowCatalog(ITelegramBotClient bot, Message message)
         {
             InlineKeyboardMarkup inkm = CreateCategoryKeyBoard();
-            await bot.SendTextMessageAsync(message.Chat.Id, "Каталог\nКакая категория вас интересует?", replyMarkup: inkm);
+            await bot.SendTextMessageAsync(message.Chat.Id, "События \nКакое событие вас интересует?", replyMarkup: inkm);
         }
         /// <summary>
         /// Метод разделяет строку с Id и действием через "|" на кортеж
